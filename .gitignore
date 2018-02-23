@@ -1,0 +1,5 @@
+# Bytecode
+__pycache__/
+
+# Test maps
+src/maps/
