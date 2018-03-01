@@ -10,6 +10,10 @@ import constants
 class Map:
     '''
     Map represented by data loaded from a file.
+
+    The file must contain integers separated by spaces. Each line will consist of a row in the map,
+    and the row with most columns will define the width of the map (zeroes will be filled in the
+    rows to make the matrix rectangular). Each digit must correspond to a terrain.|
     '''
 
     def __init__(self, fname=''):
@@ -21,10 +25,7 @@ class Map:
 
     def load(self, fname):
         '''
-        Loads data from a file into the map matrix. The file must contain integers separated by spaces.
-        Each line will consist of a row in the map, and the row with most columns will define the width
-        of the map (zeroes will be filled in if a rows are not the same size). Each digit must correspond 
-        to a terrain.
+        Loads data from a file into the map matrix.
         '''
         with open(fname) as fdata:
             lines = fdata.readlines()
