@@ -1,16 +1,26 @@
+'''
+Altough refered to as a game because of pygame, this module actually manages
+all the event handling and rendering of the simulation.
+'''
 import pygame
 from questlogic import maps, constants
 
 terrenum = constants.Terrain
+pixelfont = r'/home/aran/Documents/Escuela/Artificial_Intelligence/Practica1/src/fonts/PressStart2P.ttf'
+kpevents = set(['0', '1', '2', '3', '4', '5', '6'])
 
 class Game(object):
-    """docstring for Game."""
+    """
+    Main class of the simulation. It includes the logic part of the project,
+    such as map data and characters, and a rendering object to manage all the
+    images on screen
+    """
 
     def __init__(self):
 
         self.gamemap = maps.Map('src/maps/dungeon')
-        self.width = len(self.gamemap.matrix[0]) * 48
-        self.height = len(self.gamemap.matrix) * 48 + 30
+        self.width = len(self.gamemap.matrix[0]) * 48 + 200
+        self.height = len(self.gamemap.matrix) * 48
 
         # Game intialization
         pygame.init()
@@ -28,7 +38,10 @@ class Game(object):
                     exit()
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
-                    self.renderer.select(event.pos)
+                    self.renderer.clicked(event.pos)
+
+                if event.type == pygame.KEYDOWN:
+                    self.renderer.keypressed(event.unicode)
 
             self.renderer.render()
             pygame.display.update()
@@ -44,27 +57,32 @@ class Renderer:
         # Rendered objects
         self.gameobjects = [
             GameMap(self.gd, (0, 0), gamemap),
-            InfoBar(self.gd, width, (0, height - 30))
+            InfoBar(self.gd, height, (width - 200, 0))
         ]
 
     def render(self):
+        """
+        Call the implemented render method on each overridden render object.
+        """
         for gobj in self.gameobjects:
             gobj.render()
 
-    def select(self, coords):
-        """ Activates the selection tile """
+    def clicked(self, coords):
+        """ Activates event on mouse click. """
 
         # Activate cursor if click was on the map
-        if coords[1] < (self.height - 30):
+        if coords[0] < (self.width - 200):
             tilecoords = ((coords[0] // 48), (coords[1] // 48))
             if tilecoords != self.gameobjects[0].selectedtile:
+                # Selection cursor on map
                 self.gameobjects[0].selectedtile = tilecoords
 
+                # Info of the selected tile
                 terraintype = self.gameobjects[0].getterrain(tilecoords)
-                infostring = constants.terrainnames[terraintype] \
-                    + ' ' +  str(tilecoords)
-                self.gameobjects[1].prepare(infostring)
+                self.gameobjects[1].prepare(constants.terrainnames[terraintype],
+                    str(tilecoords))
             else:
+                # Deactivates cursor if clicked on same selected tile
                 self.gameobjects[0].selectedtile = None
                 self.gameobjects[1].reset()
 
@@ -73,18 +91,32 @@ class Renderer:
             self.gameobjects[0].selectedtile = None
             self.gameobjects[1].reset()
 
+    def keypressed(self, value):
+        """ Process event on key press. """
+        if self.gameobjects[1].selected and value in kpevents:
+            self.gameobjects[0].changeterrain(int(value))
+            terraintype = self.gameobjects[0].getselected()
+            self.gameobjects[1].prepare(constants.terrainnames[terraintype],
+                str(self.gameobjects[0].selectedtile))
+
 class ScreenSection:
-    """docstring for Render."""
+    """
+    Abstract class for rendered objects. All objects that appear on screen must
+    implement this class and redefine their own render method
+    """
     def __init__(self, gd, coords):
         self.coords = coords
         self.gd = gd
 
     def render(self):
-        """ Abstract method for rendered objects """
+        """ Virtual method for rendered objects """
         raise NotImplementedError
 
 class GameMap(ScreenSection):
-    """docstring for GameMap."""
+    """
+    Rendering object for the GameMap class. It will draw a tile according to the
+    type of terrain in the data matrix.
+    """
     def __init__(self, gd, coords, gamemap):
         super(GameMap, self).__init__(gd, coords)
         self.gamemap = gamemap
@@ -113,40 +145,68 @@ class GameMap(ScreenSection):
             self.gd.blit(self.selectimg, (self.selectedtile[0] * 48, self.selectedtile[1] * 48))
 
     def getterrain(self, coords):
+        """ Gets current value in the data matrix of the map. """
         return self.gamemap.matrix[coords[1]][coords[0]]
 
+    def getselected(self):
+        if self.selectedtile:
+            x = self.selectedtile[0]
+            y = self.selectedtile[1]
+            return self.gamemap.matrix[y][x]
+
+    def changeterrain(self, value):
+        """  """
+        x = self.selectedtile[0]
+        y = self.selectedtile[1]
+        self.gamemap.matrix[y][x] = value
+
 class InfoBar(ScreenSection):
-    """docstring for GameInfo."""
-    def __init__(self, gd, width, coords):
+    """
+    Rendered class for the information section on the right of the screen.
+    It will display information of a selected tile.
+    """
+    def __init__(self, gd, height, coords):
         super(InfoBar, self).__init__(gd, coords)
-        self.width = width
+        self.height = height
 
         # Info section
         self.selected = False
-        self.color = (0, 0, 0)
+        self.color = (128, 128, 128)
         self.txtcolor = (255, 255, 255)
-        self.font = pygame.font.Font('freesansbold.ttf', 16)
-        self.txtsurf = None
-        self.textrect = None
+
+        # Text attributes
+        self.font = pygame.font.Font(pixelfont, 12)
+        self.texts = []
 
     def render(self):
         pygame.draw.rect(self.gd, self.color, (
             self.coords[0],
             self.coords[1],
-            self.width,
-            30
+            200,
+            self.height
         ))
 
         if self.selected:
-            self.txtrect.topleft = (self.coords[0] + 5, self.coords[1] + 5)
-            self.gd.blit(self.txtsurf, self.txtrect)
+            for i, t in enumerate(self.texts):
+                self.gd.blit(t, (self.coords[0] + 10, 20 * i + 10))
 
-    def prepare(self, text):
+    def prepare(self, name, txtcoords):
+        """
+        Updates status of the info section. Information must not be displayed
+        if a tile is not selected, or it must be updated if another tile is
+        selected.
+        """
         self.selected = True
-        self.txtsurf = self.font.render('Info: ' + text, True, self.txtcolor)
-        self.txtrect  = self.txtsurf.get_rect()
+
+        self.texts = [
+            self.font.render('INFO ', True, self.txtcolor),
+            self.font.render('Type: ' + name, True, self.txtcolor),
+            self.font.render('Coords: ' + txtcoords, True, self.txtcolor)
+        ]
 
     def reset(self):
+        """
+        Resets to default status when selection is deactivated.
+        """
         self.selected = False
-        self.txtsurf = None
-        self.txtrect = None
+        self.texts = []
