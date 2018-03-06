@@ -44,7 +44,7 @@ class Map:
                     self.matrix[index].append(value)
 
         # If matrix is not rectangular, add the columns to the rows that are short
-        def rowsize(l): return len(l)
+        rowsize = lambda l: len(l)
 
         longest = max(rowsize(i) for i in self.matrix)
 

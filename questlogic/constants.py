@@ -1,3 +1,6 @@
+"""
+Symbolic constants for questlogic.
+"""
 from enum import Enum
 
 validterrains = set([0, 1, 2, 3, 4, 5, 6])
@@ -13,6 +16,7 @@ terrainnames = {
 }
 
 class Terrain(Enum):
+    """ Terrain type constants """
     WALL = 0
     ROAD = 1
     MOUNTAIN = 2
@@ -20,3 +24,10 @@ class Terrain(Enum):
     WATER = 4
     SAND = 5
     FOREST = 6
+
+class MoveDir(Enum):
+    """ Character movement constants """
+    UP = 1
+    DOWN = 2
+    RIGHT = 3
+    LEFT = 4
