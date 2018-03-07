@@ -16,14 +16,14 @@ class Renderer:
     """ Manager of the objects to be rendered in the game """
 
     def __init__(self, gamedisplay, gamemap, width, height):
-        self.gd = gamedisplay
+        self.screen = gamedisplay
         self.width = width
         self.height = height
 
         # Rendered objects
         self.gameobjects = [
-            GameMap(self.gd, (0, 0), gamemap),
-            InfoBar(self.gd, height, (width - 200, 0))
+            GameMap(self.screen, (0, 0), gamemap),
+            InfoBar(self.screen, height, (width - 200, 0))
         ]
 
     def render(self):
@@ -123,15 +123,15 @@ class GameMap(ScreenSection):
         # Render map as background
         for r, row in enumerate(self.gamemap.matrix):
             for c, value in enumerate(row):
-                self.gd.blit(self.landtiles[value], (c * 48, r * 48))
+                self.screen.blit(self.landtiles[value], (c * 48, r * 48))
 
         # Render hero
-        self.gd.blit(
+        self.screen.blit(
             self.heroimg, (self.hero.pos[0] * 48, self.hero.pos[1] * 48))
 
         # If seleciton active, render cursor
         if self.selectedtile:
-            self.gd.blit(
+            self.screen.blit(
                 self.selectimg, (self.selectedtile[0] * 48, self.selectedtile[1] * 48))
 
     def getterrain(self, coords):
@@ -195,7 +195,7 @@ class InfoBar(ScreenSection):
         self.texts = []
 
     def render(self):
-        pygame.draw.rect(self.gd, self.color, (
+        pygame.draw.rect(self.screen, self.color, (
             self.coords[0],
             self.coords[1],
             200,
@@ -204,7 +204,7 @@ class InfoBar(ScreenSection):
 
         if self.selected:
             for i, t in enumerate(self.texts):
-                self.gd.blit(t, (self.coords[0] + 10, 20 * i + 10))
+                self.screen.blit(t, (self.coords[0] + 10, 20 * i + 10))
 
     def prepare(self, name, txtcoords):
         """
