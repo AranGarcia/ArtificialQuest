@@ -7,7 +7,7 @@ from questlogic import constants, heroes
 
 TERRAINS = constants.Terrain
 PIXELFONT = \
-    r'/home/aran/Documents/Escuela/Artificial_Intelligence/Practica1/src/fonts/PressStart2P.ttf'
+    r'src/fonts/PressStart2P.ttf'
 KPEVENTS = set(['0', '1', '2', '3', '4', '5', '6'])
 ARROWEVENTS = set([273, 274, 275, 276])
 
@@ -120,10 +120,13 @@ class GameMap(ScreenSection):
         self.heroimg = pygame.image.load('src/img/hero.png')
 
     def render(self):
-        # Render map as background
-        for r, row in enumerate(self.gamemap.matrix):
-            for c, value in enumerate(row):
-                self.screen.blit(self.landtiles[value], (c * 48, r * 48))
+        # Fog of war
+        self.screen.fill((0, 0, 0))
+
+        # Render only explored parts of the map
+        for exp in self.hero.explored:
+            terr = self.gamemap.matrix[exp[0]][exp[1]]
+            self.screen.blit(self.landtiles[terr], (exp[1] * 48, exp[0] * 48))
 
         # Render hero
         self.screen.blit(
@@ -163,6 +166,8 @@ class GameMap(ScreenSection):
         # Move left
         elif value == 276:
             self.hero.moveleft()
+
+        self.hero.look_around()
 
     def __set_hero_pos(self, gmap):
         numrows = len(gmap.matrix)
