@@ -35,7 +35,6 @@ class Renderer:
 
     def clicked(self, coords):
         """ Activates event on mouse click. """
-
         # Activate cursor if click was on the map
         if coords[0] < (self.width - 200):
             tilecoords = ((coords[0] // 48), (coords[1] // 48))
@@ -112,9 +111,11 @@ class GameMap(ScreenSection):
         self.selectedtile = None
         self.selectimg = pygame.image.load('src/img/selectbox.png')
 
+        # Decision indicator
+        self.decisionimg = pygame.image.load('src/img/decision.png')
+
         # Hero position
         # heropos -> (x,y)
-
         self.hero = heroes.Human('Isildur',
                                  gamemap, self.__set_hero_pos(gamemap))
         self.heroimg = pygame.image.load('src/img/hero.png')
@@ -127,6 +128,10 @@ class GameMap(ScreenSection):
         for exp in self.hero.explored:
             terr = self.gamemap.matrix[exp[0]][exp[1]]
             self.screen.blit(self.landtiles[terr], (exp[1] * 48, exp[0] * 48))
+
+        # Draw indicator where decisions where made
+        for dcs in self.hero.decisions:
+            self.screen.blit(self.decisionimg, (dcs[1] * 48, dcs[0] * 48))
 
         # Render hero
         self.screen.blit(
