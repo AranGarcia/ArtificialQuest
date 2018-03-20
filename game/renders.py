@@ -159,18 +159,7 @@ class GameMap(ScreenSection):
         self.gamemap.matrix[y][x] = value
 
     def movehero(self, value):
-        # Move up
-        if value == 273:
-            self.hero.moveup()
-        # Move down
-        elif value == 274:
-            self.hero.movedown()
-        # Move right
-        elif value == 275:
-            self.hero.moveright()
-        # Move left
-        elif value == 276:
-            self.hero.moveleft()
+        self.hero.move(value)
 
         self.hero.look_around()
 

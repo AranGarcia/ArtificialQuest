@@ -11,9 +11,26 @@ class Human:
         self.decisions = []
         self.explored = set([(pos[1], pos[0])])
 
+        # The indexes are the values returned by key pressing events from pygame
+        self.movements = {
+            273: self.__moveup,
+            274: self.__movedown,
+            276: self.__moveleft,
+            275: self.__moveright
+        }
+
+        # Initialize the explored set with the current position
         self.look_around()
 
-    def moveup(self):
+    def move(self, direction):
+        """
+        Method called by the game renderer when a key-press event is triggered
+        and the display updates the position of the character.
+        """
+        
+        return self.movements[direction]()
+
+    def __moveup(self):
         try:
             if self.gmap.matrix[self.pos[1] - 1][self.pos[0]] != terrains.WALL.value:
                 self.pos[1] -= 1
@@ -22,7 +39,7 @@ class Human:
 
         return True
 
-    def movedown(self):
+    def __movedown(self):
         try:
             if self.gmap.matrix[self.pos[1] + 1][self.pos[0]] != terrains.WALL.value:
                 self.pos[1] += 1
@@ -31,7 +48,7 @@ class Human:
 
         return True
 
-    def moveright(self):
+    def __moveright(self):
         try:
             if self.gmap.matrix[self.pos[1]][self.pos[0] + 1] != terrains.WALL.value:
                 self.pos[0] += 1
@@ -40,7 +57,7 @@ class Human:
 
         return True
 
-    def moveleft(self):
+    def __moveleft(self):
         try:
             if self.gmap.matrix[self.pos[1]][self.pos[0] - 1] != terrains.WALL.value:
                 self.pos[0] -= 1
