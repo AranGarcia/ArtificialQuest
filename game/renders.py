@@ -116,22 +116,35 @@ class GameMap(ScreenSection):
 
         # Hero position
         # heropos -> (x,y)
-        self.hero = heroes.Human('Isildur',
-                                 gamemap, self.__set_hero_pos(gamemap))
+        self.hero = heroes.Human(
+            'Isildur',
+            gamemap,
+            self.__set_hero_pos(gamemap)
+        )
         self.heroimg = pygame.image.load('src/img/hero.png')
 
     def render(self):
+        """
+        Implemented method of a ScreenSection that renders the map tiles,
+        characters and the cursor
+        """
+
+        # NOTE:
+        # When obtaining any info from the data matrix of the map, the Y
+        # coordinates go first (e.g. matirx[y][x]).
+        # On the other hand, when blitting coordinates are normal (e.g. (x,y))
+
         # Fog of war
         self.screen.fill((0, 0, 0))
 
         # Render only explored parts of the map
         for exp in self.hero.explored:
-            terr = self.gamemap.matrix[exp[0]][exp[1]]
-            self.screen.blit(self.landtiles[terr], (exp[1] * 48, exp[0] * 48))
+            terr = self.gamemap.matrix[exp[1]][exp[0]]
+            self.screen.blit(self.landtiles[terr], (exp[0] * 48, exp[1] * 48))
 
         # Draw indicator where decisions where made
         for dcs in self.hero.decisions:
-            self.screen.blit(self.decisionimg, (dcs[1] * 48, dcs[0] * 48))
+            self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
 
         # Render hero
         self.screen.blit(
@@ -140,13 +153,18 @@ class GameMap(ScreenSection):
         # If seleciton active, render cursor
         if self.selectedtile:
             self.screen.blit(
-                self.selectimg, (self.selectedtile[0] * 48, self.selectedtile[1] * 48))
+                self.selectimg,
+                (self.selectedtile[0] * 48, self.selectedtile[1] * 48)
+            )
 
     def getterrain(self, coords):
         """ Gets current value in the data matrix of the map. """
         return self.gamemap.matrix[coords[1]][coords[0]]
 
     def getselected(self):
+        """
+        Returns the tile that was clicked and now has the cursor tile upon it.
+        """
         if self.selectedtile:
             x = self.selectedtile[0]
             y = self.selectedtile[1]
@@ -175,6 +193,12 @@ class GameMap(ScreenSection):
         self.hero.look_around()
 
     def __set_hero_pos(self, gmap):
+        """
+        set_hero_pos(GameMap) -> (x, y)
+
+        Looks for the leftmost walkable tile on which to place the hero. If None
+        is returned, then there is no available place for the hero to be placed.
+        """
         numrows = len(gmap.matrix)
         numcols = len(gmap.matrix[0])
 
