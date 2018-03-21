@@ -45,7 +45,7 @@ class Renderer:
                 # Info of the selected tile
                 terraintype = self.gameobjects[0].getterrain(tilecoords)
                 self.gameobjects[1].prepare(
-                    constants.terrainnames[terraintype], str(tilecoords))
+                    constants.TERRAIN_NAMES[terraintype], str(tilecoords))
             else:
                 # Deactivates cursor if clicked on same selected tile
                 self.gameobjects[0].selectedtile = None
@@ -66,7 +66,7 @@ class Renderer:
         elif self.gameobjects[1].selected and event.unicode in KPEVENTS:
             self.gameobjects[0].changeterrain(int(event.unicode))
             terraintype = self.gameobjects[0].getselected()
-            self.gameobjects[1].prepare(constants.terrainnames[terraintype],
+            self.gameobjects[1].prepare(constants.TERRAIN_NAMES[terraintype],
                                         str(self.gameobjects[0].selectedtile))
 
 
@@ -126,12 +126,12 @@ class GameMap(ScreenSection):
 
         # Render only explored parts of the map
         for exp in self.hero.explored:
-            terr = self.gamemap.matrix[exp[0]][exp[1]]
-            self.screen.blit(self.landtiles[terr], (exp[1] * 48, exp[0] * 48))
+            terr = self.gamemap.matrix[exp[1]][exp[0]]
+            self.screen.blit(self.landtiles[terr], (exp[0] * 48, exp[1] * 48))
 
         # Draw indicator where decisions where made
         for dcs in self.hero.decisions:
-            self.screen.blit(self.decisionimg, (dcs[1] * 48, dcs[0] * 48))
+            self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
 
         # Render hero
         self.screen.blit(

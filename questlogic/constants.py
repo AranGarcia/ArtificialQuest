@@ -5,7 +5,7 @@ from enum import Enum
 
 validterrains = set([0, 1, 2, 3, 4, 5, 6])
 
-terrainnames = {
+TERRAIN_NAMES = {
     0: 'Wall',
     1: 'Road',
     2: 'Mountain',
