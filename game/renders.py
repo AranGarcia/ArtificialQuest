@@ -45,7 +45,7 @@ class Renderer:
                 # Info of the selected tile
                 terraintype = self.gameobjects[0].getterrain(tilecoords)
                 self.gameobjects[1].prepare(
-                    constants.terrainnames[terraintype], str(tilecoords))
+                    constants.TERRAIN_NAMES[terraintype], str(tilecoords))
             else:
                 # Deactivates cursor if clicked on same selected tile
                 self.gameobjects[0].selectedtile = None
@@ -66,7 +66,7 @@ class Renderer:
         elif self.gameobjects[1].selected and event.unicode in KPEVENTS:
             self.gameobjects[0].changeterrain(int(event.unicode))
             terraintype = self.gameobjects[0].getselected()
-            self.gameobjects[1].prepare(constants.terrainnames[terraintype],
+            self.gameobjects[1].prepare(constants.TERRAIN_NAMES[terraintype],
                                         str(self.gameobjects[0].selectedtile))
 
 
