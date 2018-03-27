@@ -58,3 +58,31 @@ class Map:
             [random.randint(0, 1) for i in range(columns)]
             for j in range(rows)
         ]
+
+    def get_walkable(self, coord):
+        """
+        Returns a list of coordinates where the hero can move from its current
+        position (i.e., places where there isn't a wall).
+        """
+        walkable = []
+
+        # Up
+        if self.__is_walkable((coord[0], coord[1] - 1)):
+            walkable.append((coord[0], coord[1] - 1))
+        # Down
+        if self.__is_walkable((coord[0], coord[1] + 1)):
+            walkable.append((coord[0], coord[1] + 1))
+        # Left
+        if self.__is_walkable((coord[0] - 1, coord[1])):
+            walkable.append((coord[0] - 1, coord[1]))
+        # Right
+        if self.__is_walkable((coord[0] + 1, coord[1])):
+            walkable.append((coord[0] + 1, coord[1]))
+
+        return walkable
+
+    def __is_walkable(self, xy):
+        try:
+            return self.matrix[xy[1]][xy[0]] != constants.Terrain.WALL.value
+        except IndexError:
+            return False
