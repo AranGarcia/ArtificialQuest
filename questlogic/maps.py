@@ -67,21 +67,21 @@ class Map:
         walkable = []
 
         # Up
-        if self.__is_walkable((coord[0], coord[1] - 1)):
+        if self.is_walkable((coord[0], coord[1] - 1)):
             walkable.append((coord[0], coord[1] - 1))
         # Down
-        if self.__is_walkable((coord[0], coord[1] + 1)):
+        if self.is_walkable((coord[0], coord[1] + 1)):
             walkable.append((coord[0], coord[1] + 1))
         # Left
-        if self.__is_walkable((coord[0] - 1, coord[1])):
+        if self.is_walkable((coord[0] - 1, coord[1])):
             walkable.append((coord[0] - 1, coord[1]))
         # Right
-        if self.__is_walkable((coord[0] + 1, coord[1])):
+        if self.is_walkable((coord[0] + 1, coord[1])):
             walkable.append((coord[0] + 1, coord[1]))
 
         return walkable
 
-    def __is_walkable(self, xy):
+    def is_walkable(self, xy):
         try:
             return self.matrix[xy[1]][xy[0]] != constants.Terrain.WALL.value
         except IndexError:

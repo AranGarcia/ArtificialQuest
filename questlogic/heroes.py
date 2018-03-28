@@ -80,7 +80,6 @@ class Hero:
 
         self.explored.add((x, y))
         w = self.gmap.get_walkable(self.pos)
-        count = len(w)
 
         # Look up
         if (x, y - 1) not in self.explored and 0 <= y - 1:
@@ -95,7 +94,7 @@ class Hero:
         if (x + 1, y) not in self.explored and x + 1 < limx:
             self.explored.add((x + 1, y))
 
-        if count > 2:
+        if len(w) > 2:
             self.decisions.append((self.pos[0], self.pos[1]))
 
 class Human(Hero):
