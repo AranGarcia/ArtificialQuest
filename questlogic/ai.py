@@ -10,9 +10,14 @@ The search algorithms implemented are:
 
 It also abstracts the problem into a class, which will provide the means with
 establishing and verifying goals, generating nodes given a state and check what
-actions can be done.
+actions can be done. A problem should be instanced every time a hero has a goal
+to reach.
+
+Each search algorithm returns a Solution object that can represent a FAILURE or
+a SUCCESS.
 """
 
+from enum import Enum
 from heapq import heapify, heappush, heappop
 from constants import MoveDir
 
@@ -107,12 +112,42 @@ class Node:
         )
 
 
+class SolStat(Enum):
+    """
+    Symbolic constants that represent the status of the solution.
+
+    CUTOFF is only used internally for iterative deepening search algorithm.
+    """
+    SUCCESS = 1
+    FAIULURE = 2
+    CUTOFF = 3
+
+
+class Solution:
+    """
+    A Solution structure, used as a result of any of the search algorithms. It's
+    purpose is to maintain two fields:
+
+    - Status: A symbolic constant representing the result of the search.
+    - Node:   This field will be set with a node only if the status is SUCCESS.
+    """
+
+    def __init__(self, status, node=None):
+        self.status = status
+        self.node = node
+
+    def __str__(self):
+        return 'Solution<%s>' % self.status
+
+    def __eq__(self, other):
+        return self.status == other
+
+
 DIR_DIFF = {
     (-1, 0): MoveDir.RIGHT,
     (1, 0): MoveDir.LEFT,
     (0, -1): MoveDir.DOWN,
     (0, 1): MoveDir.UP
-
 }
 
 DIRECTIONS = {
@@ -157,7 +192,13 @@ class MapProblem:
 
 def bf_search(problem):
     """
-    Implemention of breadth-first-search algorithm.
+    Implementation of the breadth first search algorithm.
+
+    bf_search(problem) -> solution
+
+    solution can hava a status of:
+    - SUCCESS: A goal node has been reached.
+    - FAILURE: A goal cannot be reached from the initial state.
     """
     node = problem.initial
 
@@ -184,13 +225,17 @@ def df_search(problem, actions):
     """
     df_search(problem, action) -> solution
 
+    solution can hava a status of:
+    - SUCCESS: A goal node has been reached.
+    - FAILURE: A goal cannot be reached from the initial state.
+
     Implementation of depth first search using graph search (the explored states
     are stored so to avoid infinite loops). The solution returned is a node with
     the parent information and therefore the path from the initial point; if a
     solution doesn't exist, None is returned.
 
     One important thing to notice is that depth searches will generate states
-    in the order that the agent has established it's actions. In other words, if
+    in the order that the agent has established it's ACTIONS. In other words, if
     an agent always will move up and then down, it will first try to generate a
     state with an upward movement and then downward.
     """
@@ -226,17 +271,19 @@ def dfs_recursive(problem, actions, node, explored):
 
 def dl_search(problem, actions, limit):
     """
-    df_search(problem, action) -> solution
+    dl_search(problem, action, limit) -> solution
 
-    Implementation of depth first search using graph search (the explored states
-    are stored so to avoid infinite loops). The solution returned is a node with
-    the parent information and therefore the path from the initial point; if a
-    solution doesn't exist, None is returned.
+    solution can hava a status of:
+    - SUCCESS: A goal node has been reached.
+    - FAILURE: A goal cannot be reached from the initial state.
+    - CUTOFF : A goal cannot be reached from the initial state within the depth
+               limit.
 
-    One important thing to notice is that depth searches will generate states
-    in the order that the agent has established it's actions. In other words, if
-    an agent always will move up and then down, it will first try to generate a
-    state with an upward movement and then downward.
+    Implementation of the depth limited search. The algorithm is similar to the
+    depth first search, except that also considers a depth limit; if a solution
+    is not found within that limit then a CUTOFF solution is returned.
+
+    ACTIONS are also considered in order.
     """
 
     explored = set([problem.initial])
@@ -245,44 +292,54 @@ def dl_search(problem, actions, limit):
 
 def dls_recursive(problem, actions, node, limit, explored):
     """
-    Recursive auxiliary function for the df_search.
+    Recursive auxiliary function for the dl_search.
     """
     if problem.is_goal(node):
-        return node
+        return Solution(SolStat.SUCCESS, node)
+    elif limit == 0:
+        return Solution(SolStat.CUTOFF)
 
-    # Cutoff
-    if limit == 0:
-        return False
-
-    # The generation of states should be according to the order of the actions.
+    cutoff_ocurred = False
     for action in actions:
         child = problem.get_child(node, action)
-        cutoff_ocurred = False
 
-        # Not all states generate another state with all actions.
         if child:
             if child not in explored:
                 explored.add(child)
                 result = \
                     dls_recursive(problem, actions, child, limit - 1, explored)
-
-                # If False is return, cutoff has ocurred
-                # Otherwise, check if the the goal was found on a child, and
-                # return that child
-                if result is False:
+                if result is SolStat.CUTOFF:
                     cutoff_ocurred = True
-                elif problem.is_goal(result):
+
+                elif result != SolStat.FAIULURE:
                     return result
 
-    # Limit has been reached
     if cutoff_ocurred:
-        return False
-    # Node with a dead end
-    return None
+        return Solution(SolStat.CUTOFF)
+
+    return Solution(SolStat.FAIULURE)
 
 
-def idf_search(problem, actions, initial_limit=0, increment=1):
-    pass
+def id_search(problem, actions, depth=1, increment=1):
+    """
+    id_search(problem, actions, depth, increment) -> solution
+
+    solution can hava a status of:
+    - SUCCESS: A goal node has been reached.
+    - FAILURE: A goal cannot be reached from the initial state.
+
+    Impementation of the iterative deepening search. The search starts
+    considering a DEPTH limit in which a solution must be found. If a CUTOFF
+    solution, then the depth limit is INCREMENTED and the search algorithm
+    is invoked with the new depth limit, either a SUCCESS or FAILURE is returned.
+    """
+    while True:
+        result = dl_search(problem, actions, depth)
+
+        if result != SolStat.CUTOFF:
+            return result
+        else:
+            depth += increment
 
 
 if __name__ == '__main__':
@@ -336,8 +393,8 @@ if __name__ == '__main__':
         prob = MapProblem(m, start, end)
         print(' done')
 
-        print('Solving:\nStart', start, '\nEnd', end, '\n')
-        return idf_search(
+        print('Solving:\nStart', start, '\nEnd', end)
+        return id_search(
             prob,
             [
                 MoveDir.UP,
@@ -363,4 +420,5 @@ if __name__ == '__main__':
             print(p)
 
     g = testidfs()
-    # print_path(g)
+    print('\n\nDONE SEARCH:', g)
+    # print_path(g.node)
