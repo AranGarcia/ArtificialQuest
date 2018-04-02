@@ -3,7 +3,7 @@ Symbolic constants for questlogic.
 """
 from enum import Enum
 
-validterrains = set([0, 1, 2, 3, 4, 5, 6])
+valid_terrains = set([0, 1, 2, 3, 4, 5, 6])
 
 TERRAIN_NAMES = {
     0: 'Wall',

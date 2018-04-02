@@ -1,11 +1,10 @@
-from . import constants
-from . import ai
+from constants import MoveDir, Terrain
+import ai
 
-moves = constants.MoveDir
-terrains = constants.Terrain
 
 class Hero:
     """docstring for Hero."""
+
     def __init__(self, name, gmap, pos):
         self.name = name
         self.gmap = gmap
@@ -34,7 +33,7 @@ class Hero:
 
     def __moveup(self):
         try:
-            if self.gmap.matrix[self.pos[1] - 1][self.pos[0]] != terrains.WALL.value:
+            if self.gmap.matrix[self.pos[1] - 1][self.pos[0]] != Terrain.WALL.value:
                 self.pos[1] -= 1
         except IndexError:
             return False
@@ -43,7 +42,7 @@ class Hero:
 
     def __movedown(self):
         try:
-            if self.gmap.matrix[self.pos[1] + 1][self.pos[0]] != terrains.WALL.value:
+            if self.gmap.matrix[self.pos[1] + 1][self.pos[0]] != Terrain.WALL.value:
                 self.pos[1] += 1
         except IndexError:
             return False
@@ -52,7 +51,7 @@ class Hero:
 
     def __moveright(self):
         try:
-            if self.gmap.matrix[self.pos[1]][self.pos[0] + 1] != terrains.WALL.value:
+            if self.gmap.matrix[self.pos[1]][self.pos[0] + 1] != Terrain.WALL.value:
                 self.pos[0] += 1
         except IndexError:
             return False
@@ -61,7 +60,7 @@ class Hero:
 
     def __moveleft(self):
         try:
-            if self.gmap.matrix[self.pos[1]][self.pos[0] - 1] != terrains.WALL.value:
+            if self.gmap.matrix[self.pos[1]][self.pos[0] - 1] != Terrain.WALL.value:
                 self.pos[0] -= 1
         except IndexError:
             return False
@@ -75,7 +74,7 @@ class Hero:
         limx = len(self.gmap.matrix[0])
         limy = len(self.gmap.matrix)
 
-        x,y = self.pos[0], self.pos[1]
+        x, y = self.pos[0], self.pos[1]
         count = 0
 
         self.explored.add((x, y))
@@ -96,6 +95,7 @@ class Hero:
 
         if len(w) > 2:
             self.decisions.append((self.pos[0], self.pos[1]))
+
 
 class Human(Hero):
     def __init__(self, name, gmap, pos):

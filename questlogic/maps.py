@@ -23,6 +23,24 @@ class Map:
         if fname:
             self.load(fname)
 
+    def count_walkable(self, coord):
+        walkable = 0
+
+        # Up
+        if self.is_walkable((coord[0], coord[1] - 1)):
+            walkable += 1
+        # Down
+        if self.is_walkable((coord[0], coord[1] + 1)):
+            walkable += 1
+        # Left
+        if self.is_walkable((coord[0] - 1, coord[1])):
+            walkable += 1
+        # Right
+        if self.is_walkable((coord[0] + 1, coord[1])):
+            walkable += 1
+
+        return walkable
+
     def load(self, fname):
         '''
         Loads data from a file into the map matrix.
@@ -38,7 +56,7 @@ class Map:
                 value = int(digit)
 
                 # Treat invalid values as 0 (as a wall)
-                if not value in constants.validterrains:
+                if not value in constants.valid_terrains:
                     self.matrix[index].append(0)
                 else:
                     self.matrix[index].append(value)
