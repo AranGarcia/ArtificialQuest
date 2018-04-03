@@ -101,14 +101,13 @@ class Node:
     def __eq__(self, other):
         return self.coord == other.coord
 
-    def __hash__(self):
-        return hash(self.coord)
-
     def __str__(self):
-        p = self.parent.coord if self.parent is not None else None
-        return 'Node<State:%s, Parent:%s>' % (
+        par = self.parent.coord if self.parent else None
+        act = self.action if self.action else None
+        return 'Node<State:%s, Parent:%s, Action%s>' % (
             self.coord,
-            p
+            par,
+            act
         )
 
 
@@ -119,7 +118,7 @@ class SolStat(Enum):
     CUTOFF is only used internally for iterative deepening search algorithm.
     """
     SUCCESS = 1
-    FAIULURE = 2
+    FAILURE = 2
     CUTOFF = 3
 
 
@@ -137,7 +136,7 @@ class Solution:
         self.node = node
 
     def __str__(self):
-        return 'Solution<%s>' % self.status
+        return 'Solution<%s - %s>' % (self.status, self.node)
 
     def __eq__(self, other):
         return self.status == other
@@ -161,20 +160,57 @@ DIRECTIONS = {
 class MapProblem:
     """
     Formulation of the problem that heroes will encounter on a map. Such
-    problems consist of an initial state, actions that an agent can do,
+    problems consist of an initial state, actions that an agent can do on that
+    state, and a goal state.
     """
 
     def __init__(self, gmap, initial, goal):
         self.gmap = gmap
         self.initial = Node(initial, 0)
         self.goal = goal
+        self.explored = set([initial])
 
     def is_goal(self, node):
+        """ Validates if node is the goal """
         return node.coord == self.goal
 
-    def iter_children(self, node):
-        for child in self.gmap.get_walkable(node.coord):
-            yield Node(child, (node.cost + 1), node, self.__get_direction(node.coord, child))
+    def get_children(self, node):
+        """
+        Returns a list containing immediate children nodes.
+        """
+        return [Node(child, (node.cost + 1), node,
+                     self.__get_direction(node.coord, child))
+                for child in self.gmap.get_walkable(node.coord)
+                ]
+
+    def get_children_enhanced(self, node):
+        walkable = [Node(w, 0, node, self.__get_direction(node.coord, w))
+                    for w in self.gmap.get_walkable(node.coord)]
+
+        walked = set([node.coord])
+
+        def exp(n): return n not in walked
+
+        for w in walkable:
+            aux = w.coord
+            while True:
+                others = self.gmap.get_walkable(aux)
+                if len(others) != 2 or aux == self.goal:
+                    w.coord = aux
+                    break
+                # "Walking" to next node. Others is supposed to be empty if then
+                # amount of neighbor nodes is equal to 2 (one of them is the
+                # node from which it came from).
+                walked.add(aux)
+                aux, *others \
+                    = [c for c in
+                        filter(exp, self.gmap.get_walkable(aux))]
+
+        self.explored.update(walked)
+        # print('\tReturning')
+        # for w in walkable:
+        #     print('\t\t', w)
+        return walkable
 
     def get_child(self, node, action):
         d = DIRECTIONS[action.value]
@@ -189,6 +225,8 @@ class MapProblem:
 # Search algorithms #
 #####################
 
+# Breadth first search
+
 
 def bf_search(problem):
     """
@@ -196,29 +234,64 @@ def bf_search(problem):
 
     bf_search(problem) -> solution
 
-    solution can hava a status of:
+    solution can have a status of:
     - SUCCESS: A goal node has been reached.
     - FAILURE: A goal cannot be reached from the initial state.
     """
     node = problem.initial
 
     if problem.is_goal(node):
-        return node
+        return Solution(SolStat.SUCCESS, node)
 
     frontier = StateHeap()
     frontier.push(node)
-    explored = set()
 
     while frontier:
         node = frontier.pop()
-        explored.add(node)
+        problem.explored.add(node.coord)
 
-        for child in problem.iter_children(node):
-            if child not in explored:
+        for child in problem.get_children(node):
+            if child.coord not in problem.explored:
                 if problem.is_goal(child):
-                    return child
+                    return Solution(SolStat.SUCCESS, child)
                 frontier.push(child)
-    return Node(False, -1)
+
+    return Solution(SolStat.FAILURE)
+
+
+def bf_search_enhanced(problem):
+    """
+    Implementation of the breadth first search algorithm.
+
+    bf_search(problem) -> solution
+
+    solution can have a status of:
+    - SUCCESS: A goal node has been reached.
+    - FAILURE: A goal cannot be reached from the initial state.
+    """
+    node = problem.initial
+    print('\nStarting at', node, '\n')
+
+    if problem.is_goal(node):
+        return Solution(SolStat.SUCCESS, node)
+
+    frontier = []
+    frontier.append(node)
+
+    while frontier:
+        node = frontier.pop(0)
+        problem.explored.add(node.coord)
+
+        for child in problem.get_children_enhanced(node):
+            if child.coord not in problem.explored:
+                if problem.is_goal(child):
+                    return Solution(SolStat.SUCCESS, child)
+
+                frontier.append(child)
+    return Solution(SolStat.FAILURE)
+
+
+# Depth first search
 
 
 def df_search(problem, actions):
@@ -256,17 +329,18 @@ def dfs_recursive(problem, actions, node, explored):
         child = problem.get_child(node, action)
 
         # Not all states generate another state with all actions.
-        if child:
-            if child not in explored:
-                explored.add(child)
-                result = dfs_recursive(problem, actions, child, explored)
+        if child and child not in explored:
+            explored.add(child)
+            result = dfs_recursive(problem, actions, child, explored)
 
-                # If the the goal was found on a child, return that child
-                if result and problem.is_goal(result):
-                    return result
+            # If the the goal was found on a child, return that child
+            if result and problem.is_goal(result):
+                return result
 
     # Dead end
     return None
+
+# Depth limited search
 
 
 def dl_search(problem, actions, limit):
@@ -303,21 +377,22 @@ def dls_recursive(problem, actions, node, limit, explored):
     for action in actions:
         child = problem.get_child(node, action)
 
-        if child:
-            if child not in explored:
-                explored.add(child)
-                result = \
-                    dls_recursive(problem, actions, child, limit - 1, explored)
-                if result is SolStat.CUTOFF:
-                    cutoff_ocurred = True
+        if child and child not in explored:
+            explored.add(child)
+            result = \
+                dls_recursive(problem, actions, child, limit - 1, explored)
+            if result is SolStat.CUTOFF:
+                cutoff_ocurred = True
 
-                elif result != SolStat.FAIULURE:
-                    return result
+            elif result != SolStat.FAILURE:
+                return result
 
     if cutoff_ocurred:
         return Solution(SolStat.CUTOFF)
 
-    return Solution(SolStat.FAIULURE)
+    return Solution(SolStat.FAILURE)
+
+# Iterative deepening search
 
 
 def id_search(problem, actions, depth=1, increment=1):
@@ -352,11 +427,11 @@ if __name__ == '__main__':
         print('done')
 
         print('Loading problem...', end='')
-        prob = MapProblem(m, (0, 9), (15, 1))
+        prob = MapProblem(m, (1, 6), (15, 1))
         print(' done')
 
         print('Solving...')
-        return bf_search(prob)
+        return bf_search_enhanced(prob)
 
     def testdfs():
         print('DFS Test')
@@ -397,10 +472,10 @@ if __name__ == '__main__':
         return id_search(
             prob,
             [
+                MoveDir.RIGHT,
                 MoveDir.UP,
-                MoveDir.DOWN,
                 MoveDir.LEFT,
-                MoveDir.RIGHT
+                MoveDir.DOWN
             ],
             1,
             1
@@ -419,6 +494,6 @@ if __name__ == '__main__':
         for p in path:
             print(p)
 
-    g = testidfs()
+    g = testbfs()
     print('\n\nDONE SEARCH:', g)
-    # print_path(g.node)
+    print_path(g.node)
