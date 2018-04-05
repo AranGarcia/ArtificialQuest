@@ -189,7 +189,7 @@ class MapProblem:
 
         walked = set([node.coord])
 
-        def exp(n): return n not in walked
+        exp = lambda n: n not in walked
 
         for w in walkable:
             aux = w.coord
@@ -207,9 +207,7 @@ class MapProblem:
                         filter(exp, self.gmap.get_walkable(aux))]
 
         self.explored.update(walked)
-        # print('\tReturning')
-        # for w in walkable:
-        #     print('\t\t', w)
+
         return walkable
 
     def get_child(self, node, action):
@@ -218,8 +216,33 @@ class MapProblem:
         return Node(child, (node.cost + 1), node, action) \
             if self.gmap.is_walkable(child) else None
 
+    def get_child_enhanced(self, node, action):
+        d = DIRECTIONS[action.value]
+        child = (node.coord[0] + d[0], node.coord[1] + d[1])
+
+        if not self.gmap.is_walkable(child) or child in self.explored:
+            return None
+
+        # Iterate through generated nodes until none of them are redundant (if
+        # it generates more than one node) or until a terminal node is found.
+        aux = child
+        while True:
+            # Generate child nodes that aren't explored
+            neighbors = [f for f in
+                filter(self.__already_explored , self.gmap.get_walkable(aux))]
+
+            if len(neighbors) != 1 or self.goal == aux:
+                return Node(aux, node.cost + 1, node, action)
+
+            # Node is redundant. Keep expanding.
+            self.explored.add(aux)
+            aux = neighbors[0]
+
     def __get_direction(self, u, v):
         return DIR_DIFF[(u[0] - v[0], u[1] - v[1])]
+
+    def __already_explored(self, coord):
+        return not coord in self.explored
 
 #####################
 # Search algorithms #
@@ -259,18 +282,23 @@ def bf_search(problem):
     return Solution(SolStat.FAILURE)
 
 
+def __not_in_front(n, exp): return not any([f.coord == n for f in exp])
+
+
 def bf_search_enhanced(problem):
     """
-    Implementation of the breadth first search algorithm.
+    Enhanced version of the breadth first search algorithm.
 
     bf_search(problem) -> solution
 
     solution can have a status of:
     - SUCCESS: A goal node has been reached.
     - FAILURE: A goal cannot be reached from the initial state.
+
+    The main difference between the normal version is that this version does not
+    generate redundant nodes, i.e. nodes that only generate one node.
     """
     node = problem.initial
-    print('\nStarting at', node, '\n')
 
     if problem.is_goal(node):
         return Solution(SolStat.SUCCESS, node)
@@ -283,7 +311,10 @@ def bf_search_enhanced(problem):
         problem.explored.add(node.coord)
 
         for child in problem.get_children_enhanced(node):
-            if child.coord not in problem.explored:
+            not_frontiered = __not_in_front(child.coord, frontier)
+            not_exp = child.coord not in problem.explored
+
+            if not_exp or not_frontiered:
                 if problem.is_goal(child):
                     return Solution(SolStat.SUCCESS, child)
 
@@ -313,11 +344,11 @@ def df_search(problem, actions):
     state with an upward movement and then downward.
     """
 
-    explored = set([problem.initial])
-    return dfs_recursive(problem, actions, problem.initial, explored)
+    problem.explored.add(problem.initial.coord)
+    return __dfs_recursive(problem, actions, problem.initial)
 
 
-def dfs_recursive(problem, actions, node, explored):
+def __dfs_recursive(problem, actions, node):
     """
     Recursive auxiliary function for the df_search.
     """
@@ -329,9 +360,9 @@ def dfs_recursive(problem, actions, node, explored):
         child = problem.get_child(node, action)
 
         # Not all states generate another state with all actions.
-        if child and child not in explored:
-            explored.add(child)
-            result = dfs_recursive(problem, actions, child, explored)
+        if child and child.coord not in problem.explored:
+            problem.explored.add(child)
+            result = __dfs_recursive(problem, actions, child)
 
             # If the the goal was found on a child, return that child
             if result and problem.is_goal(result):
@@ -339,6 +370,36 @@ def dfs_recursive(problem, actions, node, explored):
 
     # Dead end
     return None
+
+
+def df_search_enhanced(problem, actions):
+    """
+    Enhanced version of the depth first search algorithm
+    """
+    print('Testing enhanced DFS')
+    problem.explored.add(problem.initial.coord)
+    return __dfs_enh_recursive(problem, actions, problem.initial)
+
+def __dfs_enh_recursive(problem, actions, node):
+    problem.explored.add(node.coord)
+
+    if problem.is_goal(node):
+        return Solution(SolStat.SUCCESS, node)
+
+    print('\nDeepening', node.coord)
+    for action in actions:
+        child = problem.get_child_enhanced(node, action)
+        print(action, child)
+
+        if child and child.coord not in problem.explored:
+            problem.explored.add(child.coord)
+            result = __dfs_enh_recursive(problem, actions, child)
+
+            if result != SolStat.FAILURE and problem.is_goal(result.node):
+                return result
+
+    print('NOPE for', node.coord)
+    return Solution(SolStat.FAILURE)
 
 # Depth limited search
 
@@ -440,13 +501,13 @@ if __name__ == '__main__':
         print('done')
 
         print('Loading problem...', end='')
-        start = (0, 9)
+        start = (1, 6)
         end = (15, 1)
         prob = MapProblem(m, start, end)
         print(' done')
 
         print('Solving:\nStart', start, '\nEnd', end, '\n')
-        return df_search(
+        return df_search_enhanced(
             prob,
             [
                 MoveDir.UP,
@@ -494,6 +555,6 @@ if __name__ == '__main__':
         for p in path:
             print(p)
 
-    g = testbfs()
+    g = testdfs()
     print('\n\nDONE SEARCH:', g)
     print_path(g.node)
