@@ -24,7 +24,7 @@ class Renderer:
         self.gameobjects = [
             GameMap(self.screen, (0, 0), gamemap),
             InfoBar(self.screen, height, (width - 200, 0)),
-            Barra(self.screen, width, (0, len(gamemap.matrix)*48))
+            BarButton(self.screen, width, (0, len(gamemap.matrix)*48))
         ]
 
     def render(self):
@@ -37,7 +37,7 @@ class Renderer:
     def clicked(self, coords):
         """ Activates event on mouse click. """
         # Activate cursor if click was on the map
-        if coords[0] < (self.width - 200):
+        if coords[0] < (self.width - 200) and coords[1] < (self.height - 48):
             tilecoords = ((coords[0] // 48), (coords[1] // 48))
             if tilecoords != self.gameobjects[0].selectedtile:
                 # Selection cursor on map
@@ -51,7 +51,12 @@ class Renderer:
                 # Deactivates cursor if clicked on same selected tile
                 self.gameobjects[0].selectedtile = None
                 self.gameobjects[1].reset()
-        # elif coords[1] < (self.height):
+        elif coords[1] > (self.height - 48):
+            if coords[0] < (48+1):
+                print ("StepByStep")
+            elif coords[0] < (48*2+1):
+                print ("RunAll")
+                pass
 
         # Deactivates cursor with click off map
         else:
@@ -257,7 +262,7 @@ class BarButton(ScreenSection):
     """
 
     def __init__(self, gd, width, coords):
-        super(Barra, self).__init__(gd, coords)
+        super(BarButton, self).__init__(gd, coords)
 
         # Info section
         self.selected = False
