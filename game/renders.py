@@ -251,7 +251,7 @@ class InfoBar(ScreenSection):
         self.selected = False
         self.texts = []
 
-class Barra(ScreenSection):
+class BarButton(ScreenSection):
     """
     Bar for Buttons and Actions (Start and Finish)
     """
