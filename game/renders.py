@@ -23,7 +23,8 @@ class Renderer:
         # Rendered objects
         self.gameobjects = [
             GameMap(self.screen, (0, 0), gamemap),
-            InfoBar(self.screen, height, (width - 200, 0))
+            InfoBar(self.screen, height, (width - 200, 0)),
+            Barra(self.screen, width, (0, len(gamemap.matrix)*48))
         ]
 
     def render(self):
@@ -50,6 +51,7 @@ class Renderer:
                 # Deactivates cursor if clicked on same selected tile
                 self.gameobjects[0].selectedtile = None
                 self.gameobjects[1].reset()
+        # elif coords[1] < (self.height):
 
         # Deactivates cursor with click off map
         else:
@@ -197,7 +199,6 @@ class GameMap(ScreenSection):
                     return [i, j]
         return None
 
-
 class InfoBar(ScreenSection):
     """
     Rendered class for the information section on the right of the screen.
@@ -249,3 +250,38 @@ class InfoBar(ScreenSection):
         """
         self.selected = False
         self.texts = []
+
+class Barra(ScreenSection):
+    """
+    Bar for Buttons and Actions (Start and Finish)
+    """
+
+    def __init__(self, gd, width, coords):
+        super(Barra, self).__init__(gd, coords)
+
+        # Info section
+        self.selected = False
+        self.color = (80, 80, 80)
+        self.txtcolor = (255, 255, 255)
+        self.width= width
+
+        # Text attributes
+        self.font = pygame.font.Font(PIXELFONT, 12)
+        self.texts = []
+
+        # Info button
+        self.buttonStep= pygame.image.load("src/img/ButtonStep.png")
+        self.rectStep= self.buttonStep.get_rect()
+        self.buttonAll= pygame.image.load("src/img/ButtonAll.png")
+        self.rectAll= self.buttonAll.get_rect()
+
+    def render(self):
+        pygame.draw.rect(self.screen, self.color, (
+            self.coords[0],
+            self.coords[1],
+            self.width,
+            48
+        ))
+
+        self.screen.blit(self.buttonStep,(self.coords[0],self.coords[1]))
+        self.screen.blit(self.buttonAll,(self.coords[0]+48,self.coords[1]))
