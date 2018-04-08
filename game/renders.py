@@ -53,10 +53,15 @@ class Renderer:
                 self.gameobjects[1].reset()
         elif coords[1] > (self.height - 48):
             if coords[0] < (48+1):
-                print ("StepByStep")
-            elif coords[0] < (48*2+1):
                 print ("RunAll")
-                pass
+            elif coords[0] < (48*2+1):
+                print ("StepByStep")
+            elif coords[0] < (48*3+1):
+                print ("Start")
+                self.gameobjects[0].putStart(coords)
+            elif coords[0] < (48*4+1):
+                print ("End")
+                self.gameobjects[0].putEnd(coords)
 
         # Deactivates cursor with click off map
         else:
@@ -164,6 +169,10 @@ class GameMap(ScreenSection):
                 (self.selectedtile[0] * 48, self.selectedtile[1] * 48)
             )
 
+        # Imagen Mouse
+        self.imgMouseStart= pygame.image.load("src/img/ButtonStart.png")
+        self.imgMouseEnd= pygame.image.load("src/img/ButtonEnd.png")
+
     def getterrain(self, coords):
         """ Gets current value in the data matrix of the map. """
         return self.gamemap.matrix[coords[1]][coords[0]]
@@ -203,6 +212,29 @@ class GameMap(ScreenSection):
                 if gmap.matrix[j][i] != TERRAINS.WALL.value:
                     return [i, j]
         return None
+
+    def putStart(self, coords):
+        """
+        Poner el punto de inicio en el mapa.
+        """
+        print ("putStart")
+
+        posX,posY= coords
+
+        while True:
+            self.screen.blit(self.imgMouseEnd,(posX,posY))
+
+            for event in pygame.event.get():
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    print ("Hola", posX,posY)
+
+            posX,posY= pygame.mouse.get_pos()
+    def putEnd(self, coords):
+        """
+        Poner la meta en el mapa.
+        """
+        # print ("putEnd")
+
 
 class InfoBar(ScreenSection):
     """
@@ -279,6 +311,10 @@ class BarButton(ScreenSection):
         self.rectStep= self.buttonStep.get_rect()
         self.buttonAll= pygame.image.load("src/img/ButtonAll.png")
         self.rectAll= self.buttonAll.get_rect()
+        self.buttonStart= pygame.image.load("src/img/ButtonStart.png")
+        self.rectStart= self.buttonStart.get_rect()
+        self.buttonEnd= pygame.image.load("src/img/ButtonEnd.png")
+        self.rectEnd= self.buttonEnd.get_rect()
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
@@ -288,5 +324,7 @@ class BarButton(ScreenSection):
             48
         ))
 
-        self.screen.blit(self.buttonStep,(self.coords[0],self.coords[1]))
-        self.screen.blit(self.buttonAll,(self.coords[0]+48,self.coords[1]))
+        self.screen.blit(self.buttonAll,(self.coords[0],self.coords[1]))
+        self.screen.blit(self.buttonStep,(self.coords[0]+48,self.coords[1]))
+        self.screen.blit(self.buttonStart,(self.coords[0]+48*2,self.coords[1]))
+        self.screen.blit(self.buttonEnd,(self.coords[0]+48*3,self.coords[1]))
