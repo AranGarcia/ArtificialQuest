@@ -13,7 +13,7 @@ ARROWEVENTS = set([273, 274, 275, 276])
 
 
 class Renderer:
-    """ Manager of the objects to be rendered in the game """
+    """ Manager of the objects to be rendered in the game. """
 
     def __init__(self, gamedisplay, gamemap, width, height):
         self.screen = gamedisplay
@@ -52,16 +52,16 @@ class Renderer:
                 self.gameobjects[0].selectedtile = None
                 self.gameobjects[1].reset()
         elif coords[1] > (self.height - 48):
-            if coords[0] < (48+1):
+            if coords[0] < (48):
                 print ("RunAll")
-            elif coords[0] < (48*2+1):
+            elif coords[0] < (48*2):
                 print ("StepByStep")
-            elif coords[0] < (48*3+1):
+            elif coords[0] < (48*3):
                 print ("Start")
-                self.gameobjects[0].putStart(coords)
-            elif coords[0] < (48*4+1):
+                self.gameobjects[0].putStart(coords, (self.width,self.height))
+            elif coords[0] < (48*4):
                 print ("End")
-                self.gameobjects[0].putEnd(coords)
+                self.gameobjects[0].putEnd(coords, (self.width,self.height))
 
         # Deactivates cursor with click off map
         else:
@@ -71,15 +71,17 @@ class Renderer:
     def keypressed(self, event):
         """ Render on key press event. """
         # Movement
-        if event.key in ARROWEVENTS:
-            self.gameobjects[0].movehero(event.key)
+        if self.gameobjects[0].flagMap[0] and self.gameobjects[0].flagMap[1]:
+            if event.key in ARROWEVENTS:
+                self.gameobjects[0].movehero(event.key)
 
-        # Terrain change
-        elif self.gameobjects[1].selected and event.unicode in KPEVENTS:
-            self.gameobjects[0].changeterrain(int(event.unicode))
-            terraintype = self.gameobjects[0].getselected()
-            self.gameobjects[1].prepare(constants.TERRAIN_NAMES[terraintype],
-                                        str(self.gameobjects[0].selectedtile))
+                # Terrain change
+            elif self.gameobjects[1].selected and event.unicode in KPEVENTS:
+                self.gameobjects[0].changeterrain(int(event.unicode))
+                terraintype = self.gameobjects[0].getselected()
+                self.gameobjects[1].prepare(constants.TERRAIN_NAMES[terraintype],
+                str(self.gameobjects[0].selectedtile))
+
 
 
 class ScreenSection:
@@ -135,6 +137,13 @@ class GameMap(ScreenSection):
         )
         self.heroimg = pygame.image.load('src/img/hero.png')
 
+        # Imagen Mouse
+        self.imgMouseStart= pygame.image.load("src/img/ButtonStart.png")
+        self.imgMouseEnd= pygame.image.load("src/img/ButtonEnd.png")
+
+        #Flag ButtonStart and ButtonEnd Pos1= start, Pos2= end
+        self.flagMap= [False, False]
+
     def render(self):
         """
         Implemented method of a ScreenSection that renders the map tiles,
@@ -146,13 +155,21 @@ class GameMap(ScreenSection):
         # coordinates go first (e.g. matirx[y][x]).
         # On the other hand, when blitting coordinates are normal (e.g. (x,y))
 
-        # Fog of war
-        self.screen.fill((0, 0, 0))
+        # Si no estan los puntos de meta y fin no se activa la niebla.
+        if not (self.flagMap[0] and self.flagMap[1]):
+            # Render map as background
+            for r, row in enumerate(self.gamemap.matrix):
+                for c, value in enumerate(row):
+                    self.screen.blit(self.landtiles[value], (c * 48, r * 48))
 
-        # Render only explored parts of the map
-        for exp in self.hero.explored:
-            terr = self.gamemap.matrix[exp[1]][exp[0]]
-            self.screen.blit(self.landtiles[terr], (exp[0] * 48, exp[1] * 48))
+        else:
+            # Fog of war
+            self.screen.fill((0, 0, 0))
+
+            # Render only explored parts of the map
+            for exp in self.hero.explored:
+                terr = self.gamemap.matrix[exp[1]][exp[0]]
+                self.screen.blit(self.landtiles[terr], (exp[0] * 48, exp[1] * 48))
 
         # Draw indicator where decisions where made
         for dcs in self.hero.decisions:
@@ -169,9 +186,6 @@ class GameMap(ScreenSection):
                 (self.selectedtile[0] * 48, self.selectedtile[1] * 48)
             )
 
-        # Imagen Mouse
-        self.imgMouseStart= pygame.image.load("src/img/ButtonStart.png")
-        self.imgMouseEnd= pygame.image.load("src/img/ButtonEnd.png")
 
     def getterrain(self, coords):
         """ Gets current value in the data matrix of the map. """
@@ -213,27 +227,45 @@ class GameMap(ScreenSection):
                     return [i, j]
         return None
 
-    def putStart(self, coords):
+    def putStart(self, coords, size):
         """
         Poner el punto de inicio en el mapa.
         """
         print ("putStart")
 
-        posX,posY= coords
-
-        while True:
-            self.screen.blit(self.imgMouseEnd,(posX,posY))
-
+        self.flagMap[0]= False
+        while not self.flagMap[0]:
             for event in pygame.event.get():
-                if event.type == pygame.MOUSEBUTTONDOWN:
-                    print ("Hola", posX,posY)
+                if event.type == pygame.QUIT:
+                    exit()
 
-            posX,posY= pygame.mouse.get_pos()
-    def putEnd(self, coords):
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    # Activate cursor if click was on the map
+                    coordsAux= event.pos
+                    if coordsAux[0] < (size[0] - 200) and coordsAux[1] < (size[1] - 48):
+                        print (coordsAux, "ButtonStart", self.flagMap)
+                        self.flagMap[0]= True
+        return coordsAux
+
+
+    def putEnd(self, coords, size):
         """
         Poner la meta en el mapa.
         """
-        # print ("putEnd")
+        print ("putEnd")
+
+        while not self.flagMap[1]:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+
+                if event.type == pygame.MOUSEBUTTONDOWN:
+                    # Activate cursor if click was on the map
+                    coordsAux= event.pos
+                    if coordsAux[0] < (size[0] - 200) and coordsAux[1] < (size[1] - 48):
+                        print (coordsAux, "ButtonEnd")
+                        self.flagMap[1]= True
+        return coordsAux
 
 
 class InfoBar(ScreenSection):
