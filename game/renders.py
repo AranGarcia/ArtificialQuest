@@ -58,7 +58,12 @@ class Renderer:
                 print ("StepByStep")
             elif coords[0] < (48*3):
                 print ("Start")
-                self.gameobjects[0].putStart(coords, (self.width,self.height))
+                self.gameobjects[0].hero.pos= \
+                    self.gameobjects[0].putStart(coords, (self.width,self.height))
+
+                self.gameobjects[0].hero.explored= \
+                    set([(self.gameobjects[0].hero.pos[0],
+                          self.gameobjects[0].hero.pos[1])])
             elif coords[0] < (48*4):
                 print ("End")
                 self.gameobjects[0].putEnd(coords, (self.width,self.height))
@@ -127,13 +132,12 @@ class GameMap(ScreenSection):
 
         # Decision indicator
         self.decisionimg = pygame.image.load('src/img/decision.png')
-
         # Hero position
         # heropos -> (x,y)
         self.hero = heroes.Human(
             'Isildur',
             gamemap,
-            self.__set_hero_pos(gamemap)
+            (0,0)
         )
         self.heroimg = pygame.image.load('src/img/hero.png')
 
@@ -176,8 +180,10 @@ class GameMap(ScreenSection):
             self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
 
         # Render hero
-        self.screen.blit(
-            self.heroimg, (self.hero.pos[0] * 48, self.hero.pos[1] * 48))
+        if self.flagMap[0] and self.flagMap[1]:
+
+            self.screen.blit(
+                self.heroimg, (self.hero.pos[0] * 48, self.hero.pos[1] * 48))
 
         # If seleciton active, render cursor
         if self.selectedtile:
@@ -245,7 +251,8 @@ class GameMap(ScreenSection):
                     if coordsAux[0] < (size[0] - 200) and coordsAux[1] < (size[1] - 48):
                         print (coordsAux, "ButtonStart", self.flagMap)
                         self.flagMap[0]= True
-        return coordsAux
+                        print ((coordsAux[0] // 48, coordsAux[1] // 48))
+        return (coordsAux[0] // 48, coordsAux[1] // 48)
 
 
     def putEnd(self, coords, size):
@@ -254,6 +261,7 @@ class GameMap(ScreenSection):
         """
         print ("putEnd")
 
+        self.flagMap[1]= False
         while not self.flagMap[1]:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -265,7 +273,8 @@ class GameMap(ScreenSection):
                     if coordsAux[0] < (size[0] - 200) and coordsAux[1] < (size[1] - 48):
                         print (coordsAux, "ButtonEnd")
                         self.flagMap[1]= True
-        return coordsAux
+                        print ((coordsAux[0] // 48, coordsAux[1] // 48))
+        return (coordsAux[0] // 48, coordsAux[1] // 48)
 
 
 class InfoBar(ScreenSection):
