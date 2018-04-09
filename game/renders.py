@@ -67,11 +67,31 @@ class Renderer:
             elif coords[0] < (48*4):
                 print ("End")
                 self.gameobjects[0].putEnd(coords, (self.width,self.height))
+            elif coords[0] < (48*5):
+                print ("Algoritmo 1")
+                self.__changedImg()
+                self.gameobjects[2].algo[0]= True
+            elif coords[0] < (48*6):
+                print ("Algoritmo 2")
+                self.__changedImg()
+                self.gameobjects[2].algo[1]= True
+            elif coords[0] < (48*7):
+                print ("Algoritmo 3")
+                self.__changedImg()
+                self.gameobjects[2].algo[2]= True
 
         # Deactivates cursor with click off map
         else:
             self.gameobjects[0].selectedtile = None
             self.gameobjects[1].reset()
+
+    def __changedImg(self):
+        # for val in self.gameobjects[2].algo:
+        #     val= False
+        self.gameobjects[2].algo[0]= False
+        self.gameobjects[2].algo[1]= False
+        self.gameobjects[2].algo[2]= False
+
 
     def keypressed(self, event):
         """ Render on key press event. """
@@ -349,13 +369,20 @@ class BarButton(ScreenSection):
 
         # Info button
         self.buttonStep= pygame.image.load("src/img/ButtonStep.png")
-        self.rectStep= self.buttonStep.get_rect()
         self.buttonAll= pygame.image.load("src/img/ButtonAll.png")
-        self.rectAll= self.buttonAll.get_rect()
         self.buttonStart= pygame.image.load("src/img/ButtonStart.png")
-        self.rectStart= self.buttonStart.get_rect()
         self.buttonEnd= pygame.image.load("src/img/ButtonEnd.png")
-        self.rectEnd= self.buttonEnd.get_rect()
+
+        # # Buttons Algoritmos
+        self.algo= [False, False, False]
+
+        self.algo1a= pygame.image.load("src/img/algo1a.png")
+        self.algo2a= pygame.image.load("src/img/algo2a.png")
+        self.algo3a= pygame.image.load("src/img/algo3a.png")
+
+        self.algo1b= pygame.image.load("src/img/algo1b.png")
+        self.algo2b= pygame.image.load("src/img/algo2b.png")
+        self.algo3b= pygame.image.load("src/img/algo3b.png")
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
@@ -365,7 +392,23 @@ class BarButton(ScreenSection):
             48
         ))
 
+
         self.screen.blit(self.buttonAll,(self.coords[0],self.coords[1]))
         self.screen.blit(self.buttonStep,(self.coords[0]+48,self.coords[1]))
         self.screen.blit(self.buttonStart,(self.coords[0]+48*2,self.coords[1]))
         self.screen.blit(self.buttonEnd,(self.coords[0]+48*3,self.coords[1]))
+
+        if not self.algo[0]:
+            self.screen.blit(self.algo1a,(self.coords[0]+48*4,self.coords[1]))
+        else:
+            self.screen.blit(self.algo1b,(self.coords[0]+48*4,self.coords[1]))
+
+        if not self.algo[1]:
+            self.screen.blit(self.algo2a,(self.coords[0]+48*5,self.coords[1]))
+        else:
+            self.screen.blit(self.algo2b,(self.coords[0]+48*5,self.coords[1]))
+
+        if not self.algo[2]:
+            self.screen.blit(self.algo3a,(self.coords[0]+48*6,self.coords[1]))
+        else:
+            self.screen.blit(self.algo3b,(self.coords[0]+48*6,self.coords[1]))
