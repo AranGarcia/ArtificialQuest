@@ -31,3 +31,9 @@ class MoveDir(Enum):
     DOWN = 2
     RIGHT = 3
     LEFT = 4
+
+class Algorithm(Enum):
+    """ Algorithm type constants """
+    BFS = 1
+    DFS = 2
+    IDS = 3

@@ -178,12 +178,15 @@ class MapProblem:
         """
         Returns a list containing immediate children nodes.
         """
+        if enhance:
+            return self.__get_children_enhanced(node)
+
         return [Node(child, (node.cost + 1), node,
                      self.__get_direction(node.coord, child))
                 for child in self.gmap.get_walkable(node.coord)
                 ]
 
-    def get_children_enhanced(self, node):
+    def __get_children_enhanced(self, node):
         walkable = [Node(w, 0, node, self.__get_direction(node.coord, w))
                     for w in self.gmap.get_walkable(node.coord)]
 
@@ -220,33 +223,12 @@ class MapProblem:
         return Node(child, (node.cost + 1), node, action) \
             if self.gmap.is_walkable(child) else None
 
-    def get_child_enhanced(self, node, action):
-        d = DIRECTIONS[action.value]
-        child = (node.coord[0] + d[0], node.coord[1] + d[1])
-
-        if not self.gmap.is_walkable(child) or child in self.explored:
-            return None
-
-        # Iterate through generated nodes until none of them are redundant (if
-        # it generates more than one node) or until a terminal node is found.
-        aux = child
-        while True:
-            # Generate child nodes that aren't explored
-            neighbors = [f for f in
-                         filter(self.__already_explored, self.gmap.get_walkable(aux))]
-
-            if len(neighbors) != 1 or self.goal == aux:
-                return Node(aux, node.cost + 1, node, action)
-
-            # Node is redundant. Keep expanding.
-            self.explored.add(aux)
-            aux = neighbors[0]
-
     def reset_explored(self):
         self.explored = set([self.initial.coord])
 
     def __enh_get_child(self, child, cost, parent, action):
         """
+        Enhanced version of get_child.
         """
         if not self.gmap.is_walkable(child) or child in self.explored:
             return None
@@ -282,7 +264,7 @@ class MapProblem:
 # Breadth first search
 
 
-def bf_search(problem):
+def bf_search(problem, enhanced=False):
     """
     Implementation of the breadth first search algorithm.
 
@@ -304,7 +286,7 @@ def bf_search(problem):
         node = frontier.pop()
         problem.explored.add(node.coord)
 
-        for child in problem.get_children(node):
+        for child in problem.get_children(node, enhanced):
             if child.coord not in problem.explored:
                 if problem.is_goal(child):
                     return Solution(SolStat.SUCCESS, child)
@@ -314,43 +296,6 @@ def bf_search(problem):
 
 
 def __not_in_front(n, exp): return not any([f.coord == n for f in exp])
-
-
-def bf_search_enhanced(problem):
-    """
-    Enhanced version of the breadth first search algorithm.
-
-    bf_search(problem) -> solution
-
-    solution can have a status of:
-    - SUCCESS: A goal node has been reached.
-    - FAILURE: A goal cannot be reached from the initial state.
-
-    The main difference between the normal version is that this version does not
-    generate redundant nodes, i.e. nodes that only generate one node.
-    """
-    node = problem.initial
-
-    if problem.is_goal(node):
-        return Solution(SolStat.SUCCESS, node)
-
-    frontier = []
-    frontier.append(node)
-
-    while frontier:
-        node = frontier.pop(0)
-        problem.explored.add(node.coord)
-
-        for child in problem.get_children_enhanced(node):
-            not_frontiered = __not_in_front(child.coord, frontier)
-            not_exp = child.coord not in problem.explored
-
-            if not_exp or not_frontiered:
-                if problem.is_goal(child):
-                    return Solution(SolStat.SUCCESS, child)
-
-                frontier.append(child)
-    return Solution(SolStat.FAILURE)
 
 
 # Depth first search
@@ -400,38 +345,6 @@ def __dfs_recursive(problem, actions, node, enhance):
                 return result
 
     # Dead end
-    return Solution(SolStat.FAILURE)
-
-
-
-def df_search_enhanced(problem, actions):
-    """
-    Enhanced version of the depth first search algorithm
-    """
-    print('Testing enhanced DFS')
-    problem.explored.add(problem.initial.coord)
-    return __dfs_enh_recursive(problem, actions, problem.initial)
-
-
-def __dfs_enh_recursive(problem, actions, node):
-    problem.explored.add(node.coord)
-
-    if problem.is_goal(node):
-        return Solution(SolStat.SUCCESS, node)
-
-    print('\nDeepening', node.coord)
-    for action in actions:
-        child = problem.get_child_enhanced(node, action)
-        print(action, child)
-
-        if child and child.coord not in problem.explored:
-            problem.explored.add(child.coord)
-            result = __dfs_enh_recursive(problem, actions, child)
-
-            if result != SolStat.FAILURE and problem.is_goal(result.node):
-                return result
-
-    print('NOPE for', node.coord)
     return Solution(SolStat.FAILURE)
 
 # Depth limited search
@@ -487,7 +400,7 @@ def dls_recursive(problem, actions, node, limit, enhance):
 # Iterative deepening search
 
 
-def id_search(problem, actions, depth=1, increment=1, enhance=True):
+def id_search(problem, actions, depth=1, increment=1, enhance=False):
     """
     id_search(problem, actions, depth, increment) -> solution
 
@@ -523,7 +436,7 @@ if __name__ == '__main__':
         print(' done')
 
         print('Solving...')
-        return bf_search_enhanced(prob)
+        return bf_search(prob, True)
 
     def testdfs():
         print('DFS Test')
@@ -549,7 +462,7 @@ if __name__ == '__main__':
             True
         )
 
-    def testidfs():
+    def testids():
         print('IDFS Test')
         print('Loading map...', end='')
         m = maps.Map('../src/maps/dungeon')
@@ -572,7 +485,7 @@ if __name__ == '__main__':
             ],
             1,
             1,
-            enhance=True
+
         )
 
     def print_path(node):
@@ -588,6 +501,6 @@ if __name__ == '__main__':
         for p in path:
             print(p)
 
-    g = testdfs()
+    g = testids()
     print('\n\nDONE SEARCH:', g)
     print_path(g.node)
