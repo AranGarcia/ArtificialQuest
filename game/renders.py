@@ -70,15 +70,15 @@ class Renderer:
                 print ("PonitEnd")
                 self.gameobjects[0].putEnd(coords, (self.width,self.height))
             elif coords[0] < (48*6):
-                print ("Algoritmo 1")
+                print ("Algoritmo DFS")
                 self.__changedImg()
                 self.gameobjects[2].algo[0]= True
             elif coords[0] < (48*8):
-                print ("Algoritmo 2")
+                print ("Algoritmo BFS")
                 self.__changedImg()
                 self.gameobjects[2].algo[1]= True
             elif coords[0] < (48*10):
-                print ("Algoritmo 3")
+                print ("Algoritmo IDS")
                 self.__changedImg()
                 self.gameobjects[2].algo[2]= True
 
@@ -380,11 +380,11 @@ class BarButton(ScreenSection):
 
         self.dfs1= pygame.image.load("src/img/DFS1.png")
         self.bfs1= pygame.image.load("src/img/BFS1.png")
-        self.dls1= pygame.image.load("src/img/DLS1.png")
+        self.ids1= pygame.image.load("src/img/IDS1.png")
 
         self.dfs2= pygame.image.load("src/img/DFS2.png")
         self.bfs2= pygame.image.load("src/img/BFS2.png")
-        self.dls2= pygame.image.load("src/img/DLS2.png")
+        self.ids2= pygame.image.load("src/img/IDS2.png")
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
@@ -411,6 +411,6 @@ class BarButton(ScreenSection):
             self.screen.blit(self.bfs2,(self.coords[0]+48*6,self.coords[1]))
 
         if not self.algo[2]:
-            self.screen.blit(self.dls1,(self.coords[0]+48*8,self.coords[1]))
+            self.screen.blit(self.ids1,(self.coords[0]+48*8,self.coords[1]))
         else:
-            self.screen.blit(self.dls2,(self.coords[0]+48*8,self.coords[1]))
+            self.screen.blit(self.ids2,(self.coords[0]+48*8,self.coords[1]))
