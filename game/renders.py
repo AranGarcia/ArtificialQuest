@@ -98,33 +98,28 @@ class Renderer:
         self.gameobjects[2].algo[2]= False
 
     def __getActions(self):
-        auxNumb= 1
-        auxActions= {
-            "1":"",
-            "2":"",
-            "3":"",
-            "4":""
-        }
-        while auxNumb <= 4:
+        auxNumb= 0
+        auxActions= ["","","",""]
+        while auxNumb <= 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit()
                 if event.type == pygame.KEYDOWN:
                     if event.key == K_LEFT:
-                        if "LEFT" not in auxActions.values():
-                            auxActions[str(auxNumb)]= "LEFT"
+                        if "LEFT" not in auxActions:
+                            auxActions[auxNumb]= "LEFT"
                             auxNumb+= 1
                     elif event.key == K_RIGHT:
-                        if "RIGHT" not in auxActions.values():
-                            auxActions[str(auxNumb)]= "RIGHT"
+                        if "RIGHT" not in auxActions:
+                            auxActions[auxNumb]= "RIGHT"
                             auxNumb+= 1
                     elif event.key == K_UP:
-                        if "UP" not in auxActions.values():
-                            auxActions[str(auxNumb)]= "UP"
+                        if "UP" not in auxActions:
+                            auxActions[auxNumb]= "UP"
                             auxNumb+= 1
                     elif event.key == K_DOWN:
-                        if "DOWN" not in auxActions.values():
-                            auxActions[str(auxNumb)]= "DOWN"
+                        if "DOWN" not in auxActions:
+                            auxActions[auxNumb]= "DOWN"
                             auxNumb+= 1
                 # if event.type==pygame.KEYUP:
                 #     if event.key==K_LEFT:
