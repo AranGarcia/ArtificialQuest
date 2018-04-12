@@ -54,10 +54,12 @@ class Renderer:
         elif coords[1] > (self.height - 48):
             if coords[0] < (48):
                 print ("RunAll")
+                # start_search(
             elif coords[0] < (48*2):
                 print ("StepByStep")
+                # start_search(
             elif coords[0] < (48*3):
-                print ("Start")
+                print ("PonitStart")
                 self.gameobjects[0].hero.pos= \
                     self.gameobjects[0].putStart(coords, (self.width,self.height))
 
@@ -65,18 +67,18 @@ class Renderer:
                     set([(self.gameobjects[0].hero.pos[0],
                           self.gameobjects[0].hero.pos[1])])
             elif coords[0] < (48*4):
-                print ("End")
+                print ("PonitEnd")
                 self.gameobjects[0].putEnd(coords, (self.width,self.height))
-            elif coords[0] < (48*5):
-                print ("Algoritmo 1")
+            elif coords[0] < (48*6):
+                print ("Algoritmo DFS")
                 self.__changedImg()
                 self.gameobjects[2].algo[0]= True
-            elif coords[0] < (48*6):
-                print ("Algoritmo 2")
+            elif coords[0] < (48*8):
+                print ("Algoritmo BFS")
                 self.__changedImg()
                 self.gameobjects[2].algo[1]= True
-            elif coords[0] < (48*7):
-                print ("Algoritmo 3")
+            elif coords[0] < (48*10):
+                print ("Algoritmo IDS")
                 self.__changedImg()
                 self.gameobjects[2].algo[2]= True
 
@@ -157,7 +159,7 @@ class GameMap(ScreenSection):
         self.hero = heroes.Human(
             'Isildur',
             gamemap,
-            (0,0)
+            self.__set_hero_pos((gamemap))
         )
         self.heroimg = pygame.image.load('src/img/hero.png')
 
@@ -239,7 +241,7 @@ class GameMap(ScreenSection):
 
     def __set_hero_pos(self, gmap):
         """
-        set_hero_pos(GameMap) -> (x, y)
+        set_hero_pos(GameMap) -> [x, y]
 
         Looks for the leftmost walkable tile on which to place the hero. If None
         is returned, then there is no available place for the hero to be placed.
@@ -272,7 +274,7 @@ class GameMap(ScreenSection):
                         print (coordsAux, "ButtonStart", self.flagMap)
                         self.flagMap[0]= True
                         print ((coordsAux[0] // 48, coordsAux[1] // 48))
-        return (coordsAux[0] // 48, coordsAux[1] // 48)
+        return [coordsAux[0] // 48, coordsAux[1] // 48]
 
 
     def putEnd(self, coords, size):
@@ -294,7 +296,7 @@ class GameMap(ScreenSection):
                         print (coordsAux, "ButtonEnd")
                         self.flagMap[1]= True
                         print ((coordsAux[0] // 48, coordsAux[1] // 48))
-        return (coordsAux[0] // 48, coordsAux[1] // 48)
+        return [coordsAux[0] // 48, coordsAux[1] // 48]
 
 
 class InfoBar(ScreenSection):
@@ -376,13 +378,13 @@ class BarButton(ScreenSection):
         # # Buttons Algoritmos
         self.algo= [False, False, False]
 
-        self.algo1a= pygame.image.load("src/img/algo1a.png")
-        self.algo2a= pygame.image.load("src/img/algo2a.png")
-        self.algo3a= pygame.image.load("src/img/algo3a.png")
+        self.dfs1= pygame.image.load("src/img/DFS1.png")
+        self.bfs1= pygame.image.load("src/img/BFS1.png")
+        self.ids1= pygame.image.load("src/img/IDS1.png")
 
-        self.algo1b= pygame.image.load("src/img/algo1b.png")
-        self.algo2b= pygame.image.load("src/img/algo2b.png")
-        self.algo3b= pygame.image.load("src/img/algo3b.png")
+        self.dfs2= pygame.image.load("src/img/DFS2.png")
+        self.bfs2= pygame.image.load("src/img/BFS2.png")
+        self.ids2= pygame.image.load("src/img/IDS2.png")
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
@@ -399,16 +401,16 @@ class BarButton(ScreenSection):
         self.screen.blit(self.buttonEnd,(self.coords[0]+48*3,self.coords[1]))
 
         if not self.algo[0]:
-            self.screen.blit(self.algo1a,(self.coords[0]+48*4,self.coords[1]))
+            self.screen.blit(self.dfs1,(self.coords[0]+48*4,self.coords[1]))
         else:
-            self.screen.blit(self.algo1b,(self.coords[0]+48*4,self.coords[1]))
+            self.screen.blit(self.dfs2,(self.coords[0]+48*4,self.coords[1]))
 
         if not self.algo[1]:
-            self.screen.blit(self.algo2a,(self.coords[0]+48*5,self.coords[1]))
+            self.screen.blit(self.bfs1,(self.coords[0]+48*6,self.coords[1]))
         else:
-            self.screen.blit(self.algo2b,(self.coords[0]+48*5,self.coords[1]))
+            self.screen.blit(self.bfs2,(self.coords[0]+48*6,self.coords[1]))
 
         if not self.algo[2]:
-            self.screen.blit(self.algo3a,(self.coords[0]+48*6,self.coords[1]))
+            self.screen.blit(self.ids1,(self.coords[0]+48*8,self.coords[1]))
         else:
-            self.screen.blit(self.algo3b,(self.coords[0]+48*6,self.coords[1]))
+            self.screen.blit(self.ids2,(self.coords[0]+48*8,self.coords[1]))
