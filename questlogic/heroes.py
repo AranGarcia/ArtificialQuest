@@ -1,4 +1,7 @@
-from constants import MoveDir, Terrain
+from . import constants
+from constants import MoveDir, Terrain, Algorithm
+import math
+
 import ai
 
 
@@ -19,6 +22,9 @@ class Hero:
             276: self.__moveleft,
             275: self.__moveright
         }
+
+        # The actions that the agent will do in order while doing depth searches
+        self.actions = None
 
         # Initialize the explored set with the current position
         self.look_around()
@@ -96,9 +102,104 @@ class Hero:
         if len(w) > 2:
             self.decisions.append((self.pos[0], self.pos[1]))
 
+    def start_search(self, start, goal, algorithm, enhance):
+        """
+        Starts a search algorithm from a start state to a goal state using
+        breadth first, depth first or iterative deepening search.
+
+        start     : (x,y) coordinates of the start state.
+        goal      : (x,y) coordinates of the goal state.
+        algorithm : Symbolic constant in Constants representing the type of
+                    algorithm.
+        enhance   : If true, redundant nodes will not be generated.
+        """
+        problem = ai.MapProblem(self.gmap, start, goal)
+
+        if algorithm == Algorithm.BFS:
+            ai.bf_search(problem, enhance)
+
+        # At this point, ony depth searches remain.
+        # The hero must define the order of its actions, so if they are not
+        # defined an exception will ocurr
+        if(self.actions is None):
+            raise ValueError('hero must define actions before depth searches.')
+
+        if algorithm == Algorithm.DFS:
+            ai.df_search(problem, self.actions, enhance)
+        elif algorithm == Algorithm.IDS:
+            ai.id_search(problem, self.actions)
+
+    def define_actions(self, actions):
+        self.actions = actions
+
 
 class Human(Hero):
+    """
+    A human character. Moves better on LAND tiles.
+
+    It's movement costs are:
+    MOUNTAIN: N/A
+    LAND: 2
+    WATER: 4
+    SAND: 3
+    FOREST: 1
+    """
+
     def __init__(self, name, gmap, pos):
         super(Human, self).__init__(name, gmap, pos)
 
-        # TODO: Generate the movement costs specific to each being.
+        self.cost = {
+            Terrain.MOUNTAIN: math.inf,
+            Terrain.LAND: 1,
+            Terrain.WATER: 2,
+            Terrain.SAND: 3,
+            Terrain.FOREST: 4
+        }
+
+
+class Monkey(Hero):
+    """
+    A monkey character. Moves better on FOREST tiles.
+
+    It's movement costs are:
+    MOUNTAIN: N/A
+    LAND: 2
+    WATER: 4
+    SAND: 3
+    FOREST: 1
+    """
+
+    def __init__(self, name, gmap, pos):
+        super(Monkey, self).__init__(name, gmap, pos)
+
+        self.cost = {
+            Terrain.MOUNTAIN: math.inf,
+            Terrain.LAND: 2,
+            Terrain.WATER: 4,
+            Terrain.SAND: 3,
+            Terrain.FOREST: 1
+        }
+
+
+class Octopus(Hero):
+    """
+    An octopus character. Moves better on WATER tiles.
+
+    It's movement costs are:
+    MOUNTAIN: N/A
+    LAND: 2
+    WATER: 4
+    SAND: 3
+    FOREST: 1
+    """
+
+    def __init__(self, name, gmap, pos):
+        super(Octopus, self).__init__(name, gmap, pos)
+
+        self.cost = {
+            Terrain.MOUNTAIN: math.inf,
+            Terrain.LAND: 2,
+            Terrain.WATER: 1,
+            Terrain.SAND: math.inf,
+            Terrain.FOREST: 3
+        }
