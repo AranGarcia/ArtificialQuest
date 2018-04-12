@@ -4,6 +4,7 @@ the screen and receives the events for them.
 """
 import pygame
 from questlogic import constants, heroes
+from pygame.locals import *
 
 TERRAINS = constants.Terrain
 PIXELFONT = \
@@ -73,6 +74,7 @@ class Renderer:
                 print ("Algoritmo DFS")
                 self.__changedImg()
                 self.gameobjects[2].algo[0]= True
+                self.gameobjects[0].hero.actions= self.__getActions()
             elif coords[0] < (48*8):
                 print ("Algoritmo BFS")
                 self.__changedImg()
@@ -81,6 +83,7 @@ class Renderer:
                 print ("Algoritmo IDS")
                 self.__changedImg()
                 self.gameobjects[2].algo[2]= True
+                self.gameobjects[0].hero.actions= self.__getActions()
 
         # Deactivates cursor with click off map
         else:
@@ -94,6 +97,48 @@ class Renderer:
         self.gameobjects[2].algo[1]= False
         self.gameobjects[2].algo[2]= False
 
+    def __getActions(self):
+        auxNumb= 1
+        auxActions= {
+            "1":"",
+            "2":"",
+            "3":"",
+            "4":""
+        }
+        while auxNumb <= 4:
+            for event in pygame.event.get():
+                if event.type == pygame.QUIT:
+                    exit()
+                if event.type == pygame.KEYDOWN:
+                    if event.key == K_LEFT:
+                        if "LEFT" not in auxActions.values():
+                            auxActions[str(auxNumb)]= "LEFT"
+                            auxNumb+= 1
+                    elif event.key == K_RIGHT:
+                        if "RIGHT" not in auxActions.values():
+                            auxActions[str(auxNumb)]= "RIGHT"
+                            auxNumb+= 1
+                    elif event.key == K_UP:
+                        if "UP" not in auxActions.values():
+                            auxActions[str(auxNumb)]= "UP"
+                            auxNumb+= 1
+                    elif event.key == K_DOWN:
+                        if "DOWN" not in auxActions.values():
+                            auxActions[str(auxNumb)]= "DOWN"
+                            auxNumb+= 1
+                # if event.type==pygame.KEYUP:
+                #     if event.key==K_LEFT:
+                #         print ('Tecla izquierda liberada')
+                #     elif event.key==K_RIGHT:
+                #         print ('Tecla derecha liberada')
+                #     elif event.key==K_UP:
+                #         print ('Tecla arriba liberada')
+                #     elif event.key==K_DOWN:
+                #         print ('Tecla abajo liberada')
+
+        print (auxNumb, auxActions)
+
+        return auxActions
 
     def keypressed(self, event):
         """ Render on key press event. """
