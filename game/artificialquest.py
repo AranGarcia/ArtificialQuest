@@ -17,7 +17,7 @@ class Game(object):
 
         self.gamemap = maps.Map('src/maps/dungeon')
         self.width = len(self.gamemap.matrix[0]) * 48 + 200
-        self.height = len(self.gamemap.matrix) * 48
+        self.height = len(self.gamemap.matrix) * 48 + 48
 
         # Game intialization
         pygame.init()
