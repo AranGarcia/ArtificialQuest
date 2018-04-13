@@ -3,10 +3,10 @@ Rendering module of the game. The main class Renderer handles various parts of
 the screen and receives the events for them.
 """
 import pygame
-from questlogic import constants, heroes
+from questlogic import constants as const, heroes
 from pygame.locals import *
 
-TERRAINS = constants.Terrain
+TERRAINS = const.Terrain
 PIXELFONT = \
     r'src/fonts/PressStart2P.ttf'
 KPEVENTS = set(['0', '1', '2', '3', '4', '5', '6'])
@@ -24,8 +24,8 @@ class Renderer:
         # Rendered objects
         self.gameobjects = [
             GameMap(self.screen, (0, 0), gamemap),
-            InfoBar(self.screen, height, (width - 200, 0)),
-            BarButton(self.screen, width, (0, len(gamemap.matrix)*48))
+            Logs(self.screen, height - 48, (width - 300, 0)),
+            BarButton(self.screen, width, (0, len(gamemap.matrix) * 48))
         ]
 
     def render(self):
@@ -38,100 +38,102 @@ class Renderer:
     def clicked(self, coords):
         """ Activates event on mouse click. """
         # Activate cursor if click was on the map
-        if coords[0] < (self.width - 200) and coords[1] < (self.height - 48):
+        if coords[0] < (self.width - 300) and coords[1] < (self.height - 48):
             tilecoords = ((coords[0] // 48), (coords[1] // 48))
+
             if tilecoords != self.gameobjects[0].selectedtile:
                 # Selection cursor on map
                 self.gameobjects[0].selectedtile = tilecoords
 
                 # Info of the selected tile
                 terraintype = self.gameobjects[0].getterrain(tilecoords)
-                self.gameobjects[1].prepare(
-                    constants.TERRAIN_NAMES[terraintype], str(tilecoords))
+                self.gameobjects[1].insert_log(
+                    '>' + const.TERRAIN_NAMES[terraintype] +
+                    ' ' + str(tilecoords)
+                )
             else:
                 # Deactivates cursor if clicked on same selected tile
                 self.gameobjects[0].selectedtile = None
-                self.gameobjects[1].reset()
-        elif coords[1] > (self.height - 48):
-            if coords[0] < (48):
-                print ("RunAll")
-                # start_search(
-            elif coords[0] < (48*2):
-                print ("StepByStep")
-                # start_search(
-            elif coords[0] < (48*3):
-                print ("PonitStart")
-                self.gameobjects[0].hero.pos= \
-                    self.gameobjects[0].putStart(coords, (self.width,self.height))
 
-                self.gameobjects[0].hero.explored= \
+        # Algorithm Buttons
+        elif coords[1] > (self.height - 48):
+            self.gameobjects[0].selectedtile = None
+
+            # Start algorithm using enhanced mode
+            if coords[0] < (48):
+                if self.gameobjects[0].hero_ready():
+                    self.gameobjects[1].insert_log('>ENHANCED search...')
+                else:
+                    self.gameobjects[1].insert_log('>ERR: set parameters')
+            # Start algorithm in normal mode
+            elif coords[0] < (48 * 2):
+                if self.gameobjects[0].hero_ready():
+                    self.gameobjects[1].insert_log('>NORMAL search...')
+                else:
+                    self.gameobjects[1].insert_log('>ERR: set parameters')
+
+            # Setting START node
+            elif coords[0] < (48 * 3):
+                self.gameobjects[0].hero.pos = \
+                    self.gameobjects[0].putStart(
+                        coords, (self.width, self.height))
+
+                self.gameobjects[0].hero.explored = \
                     set([(self.gameobjects[0].hero.pos[0],
                           self.gameobjects[0].hero.pos[1])])
-            elif coords[0] < (48*4):
-                print ("PonitEnd")
-                self.gameobjects[0].putEnd(coords, (self.width,self.height))
-            elif coords[0] < (48*6):
-                print ("Algoritmo DFS")
-                self.__changedImg()
-                self.gameobjects[2].algo[0]= True
-                self.gameobjects[0].hero.actions= self.__getActions()
-            elif coords[0] < (48*8):
-                print ("Algoritmo BFS")
-                self.__changedImg()
-                self.gameobjects[2].algo[1]= True
-            elif coords[0] < (48*10):
-                print ("Algoritmo IDS")
-                self.__changedImg()
-                self.gameobjects[2].algo[2]= True
-                self.gameobjects[0].hero.actions= self.__getActions()
+                self.gameobjects[1].insert_log('>SET start')
 
-        # Deactivates cursor with click off map
-        else:
-            self.gameobjects[0].selectedtile = None
-            self.gameobjects[1].reset()
+            # Setting GOAL node
+            elif coords[0] < (48 * 4):
+                self.gameobjects[0].putEnd(coords, (self.width, self.height))
+                self.gameobjects[1].insert_log('>SET goal')
+
+            # DFS
+            elif coords[0] < (48 * 6):
+                self.gameobjects[1].insert_log('>Input actions in order')
+                self.__changedImg()
+                self.gameobjects[2].algo[0] = True
+                # self.gameobjects[0].hero.actions = self.__getActions()
+            # BFS
+            elif coords[0] < (48 * 8):
+                self.__changedImg()
+                self.gameobjects[2].algo[1] = True
+            # IDS
+            elif coords[0] < (48 * 10):
+                self.gameobjects[1].insert_log('>Input actions in order.')
+                self.__changedImg()
+                self.gameobjects[2].algo[2] = True
+                # self.gameobjects[0].hero.actions = self.__getActions()
 
     def __changedImg(self):
         # for val in self.gameobjects[2].algo:
         #     val= False
-        self.gameobjects[2].algo[0]= False
-        self.gameobjects[2].algo[1]= False
-        self.gameobjects[2].algo[2]= False
+        self.gameobjects[2].algo[0] = False
+        self.gameobjects[2].algo[1] = False
+        self.gameobjects[2].algo[2] = False
 
     def __getActions(self):
-        auxNumb= 0
-        auxActions= ["","","",""]
+        auxNumb = 0
+        auxActions = []
         while auxNumb <= 3:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
                     exit()
                 if event.type == pygame.KEYDOWN:
-                    if event.key == K_LEFT:
-                        if "LEFT" not in auxActions:
-                            auxActions[auxNumb]= "LEFT"
-                            auxNumb+= 1
-                    elif event.key == K_RIGHT:
-                        if "RIGHT" not in auxActions:
-                            auxActions[auxNumb]= "RIGHT"
-                            auxNumb+= 1
-                    elif event.key == K_UP:
-                        if "UP" not in auxActions:
-                            auxActions[auxNumb]= "UP"
-                            auxNumb+= 1
-                    elif event.key == K_DOWN:
-                        if "DOWN" not in auxActions:
-                            auxActions[auxNumb]= "DOWN"
-                            auxNumb+= 1
-                # if event.type==pygame.KEYUP:
-                #     if event.key==K_LEFT:
-                #         print ('Tecla izquierda liberada')
-                #     elif event.key==K_RIGHT:
-                #         print ('Tecla derecha liberada')
-                #     elif event.key==K_UP:
-                #         print ('Tecla arriba liberada')
-                #     elif event.key==K_DOWN:
-                #         print ('Tecla abajo liberada')
+                    if event.key == K_LEFT and const.MoveDir.LEFT not in auxActions:
+                        auxActions.append(const.MoveDir.LEFT)
+                        auxNumb += 1
+                    elif event.key == K_RIGHT and const.MoveDir.RIGHT not in auxActions:
+                        auxActions.append(const.MoveDir.RIGHT)
+                        auxNumb += 1
+                    elif event.key == K_UP and const.MoveDir.UP not in auxActions:
+                        auxActions.append(const.MoveDir.UP)
+                        auxNumb += 1
+                    elif event.key == K_DOWN and const.MoveDir.DOWN not in auxActions:
+                        auxActions.append(const.MoveDir.DOWN)
+                        auxNumb += 1
 
-        print (auxNumb, auxActions)
+        print(auxNumb, auxActions)
 
         return auxActions
 
@@ -142,13 +144,14 @@ class Renderer:
             if event.key in ARROWEVENTS:
                 self.gameobjects[0].movehero(event.key)
 
-                # Terrain change
-            elif self.gameobjects[1].selected and event.unicode in KPEVENTS:
-                self.gameobjects[0].changeterrain(int(event.unicode))
-                terraintype = self.gameobjects[0].getselected()
-                self.gameobjects[1].prepare(constants.TERRAIN_NAMES[terraintype],
-                str(self.gameobjects[0].selectedtile))
-
+        # Terrain change
+        elif self.gameobjects[0].selectedtile and event.unicode in KPEVENTS:
+            self.gameobjects[0].changeterrain(int(event.unicode))
+            terraintype = self.gameobjects[0].getselected()
+            self.gameobjects[1].insert_log(
+                '>' + const.TERRAIN_NAMES[terraintype] +
+                ' ' + str(self.gameobjects[0].selectedtile) + ' CHANGED'
+            )
 
 
 class ScreenSection:
@@ -204,11 +207,11 @@ class GameMap(ScreenSection):
         self.heroimg = pygame.image.load('src/img/hero.png')
 
         # Imagen Mouse
-        self.imgMouseStart= pygame.image.load("src/img/ButtonStart.png")
-        self.imgMouseEnd= pygame.image.load("src/img/ButtonEnd.png")
+        self.imgMouseStart = pygame.image.load("src/img/ButtonStart.png")
+        self.imgMouseEnd = pygame.image.load("src/img/ButtonEnd.png")
 
-        #Flag ButtonStart and ButtonEnd Pos1= start, Pos2= end
-        self.flagMap= [False, False]
+        # Flag ButtonStart and ButtonEnd Pos1= start, Pos2= end
+        self.flagMap = [False, False]
 
     def render(self):
         """
@@ -235,7 +238,8 @@ class GameMap(ScreenSection):
             # Render only explored parts of the map
             for exp in self.hero.explored:
                 terr = self.gamemap.matrix[exp[1]][exp[0]]
-                self.screen.blit(self.landtiles[terr], (exp[0] * 48, exp[1] * 48))
+                self.screen.blit(
+                    self.landtiles[terr], (exp[0] * 48, exp[1] * 48))
 
         # Draw indicator where decisions where made
         for dcs in self.hero.decisions:
@@ -254,7 +258,6 @@ class GameMap(ScreenSection):
                 (self.selectedtile[0] * 48, self.selectedtile[1] * 48)
             )
 
-
     def getterrain(self, coords):
         """ Gets current value in the data matrix of the map. """
         return self.gamemap.matrix[coords[1]][coords[0]]
@@ -267,6 +270,13 @@ class GameMap(ScreenSection):
             x = self.selectedtile[0]
             y = self.selectedtile[1]
             return self.gamemap.matrix[y][x]
+
+    def hero_ready(self):
+        """
+        Checks if the hero is ready to start searching.
+        Start, goal and actions must be defined in order to be ready.
+        """
+        return all([self.flagMap[0], self.flagMap[1], self.hero.actions])
 
     def changeterrain(self, value):
         """ Changes the terrain selected by the cursor on the map """
@@ -299,9 +309,9 @@ class GameMap(ScreenSection):
         """
         Poner el punto de inicio en el mapa.
         """
-        print ("putStart")
+        print("putStart")
 
-        self.flagMap[0]= False
+        self.flagMap[0] = False
         while not self.flagMap[0]:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -309,21 +319,20 @@ class GameMap(ScreenSection):
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     # Activate cursor if click was on the map
-                    coordsAux= event.pos
+                    coordsAux = event.pos
                     if coordsAux[0] < (size[0] - 200) and coordsAux[1] < (size[1] - 48):
-                        print (coordsAux, "ButtonStart", self.flagMap)
-                        self.flagMap[0]= True
-                        print ((coordsAux[0] // 48, coordsAux[1] // 48))
+                        print(coordsAux, "ButtonStart", self.flagMap)
+                        self.flagMap[0] = True
+                        print((coordsAux[0] // 48, coordsAux[1] // 48))
         return [coordsAux[0] // 48, coordsAux[1] // 48]
-
 
     def putEnd(self, coords, size):
         """
         Poner la meta en el mapa.
         """
-        print ("putEnd")
+        print("putEnd")
 
-        self.flagMap[1]= False
+        self.flagMap[1] = False
         while not self.flagMap[1]:
             for event in pygame.event.get():
                 if event.type == pygame.QUIT:
@@ -331,65 +340,60 @@ class GameMap(ScreenSection):
 
                 if event.type == pygame.MOUSEBUTTONDOWN:
                     # Activate cursor if click was on the map
-                    coordsAux= event.pos
+                    coordsAux = event.pos
                     if coordsAux[0] < (size[0] - 200) and coordsAux[1] < (size[1] - 48):
-                        print (coordsAux, "ButtonEnd")
-                        self.flagMap[1]= True
-                        print ((coordsAux[0] // 48, coordsAux[1] // 48))
+                        print(coordsAux, "ButtonEnd")
+                        self.flagMap[1] = True
+                        print((coordsAux[0] // 48, coordsAux[1] // 48))
         return [coordsAux[0] // 48, coordsAux[1] // 48]
 
 
-class InfoBar(ScreenSection):
+class Logs(ScreenSection):
     """
     Rendered class for the information section on the right of the screen.
     It will display information of a selected tile.
     """
 
     def __init__(self, gd, height, coords):
-        super(InfoBar, self).__init__(gd, coords)
+        super(Logs, self).__init__(gd, coords)
         self.height = height
 
         # Info section
-        self.selected = False
         self.color = (128, 128, 128)
         self.txtcolor = (255, 255, 255)
 
         # Text attributes
         self.font = pygame.font.Font(PIXELFONT, 12)
-        self.texts = []
+        self.max_log_size = (height - 10) // 20
+        self.logs = []
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
             self.coords[0],
             self.coords[1],
-            200,
+            300,
             self.height
         ))
 
-        if self.selected:
-            for i, t in enumerate(self.texts):
-                self.screen.blit(t, (self.coords[0] + 10, 20 * i + 10))
+        for i, t in enumerate(self.logs):
+            self.screen.blit(t, (self.coords[0] + 10, 20 * i + 10))
 
-    def prepare(self, name, txtcoords):
+    def insert_log(self, message):
         """
-        Updates status of the info section. Information must not be displayed
-        if a tile is not selected, or it must be updated if another tile is
-        selected.
+        Adds a line to the log on the LogSection
         """
-        self.selected = True
 
-        self.texts = [
-            self.font.render('INFO ', True, self.txtcolor),
-            self.font.render('Type: ' + name, True, self.txtcolor),
-            self.font.render('Coords: ' + txtcoords, True, self.txtcolor)
-        ]
+        if len(self.logs) > self.max_log_size:
+            self.logs.pop(0)
 
-    def reset(self):
+        self.logs.append(self.font.render(message, True, self.txtcolor))
+
+    def reset_logs(self):
         """
         Resets to default status when selection is deactivated.
         """
-        self.selected = False
         self.texts = []
+
 
 class BarButton(ScreenSection):
     """
@@ -403,28 +407,31 @@ class BarButton(ScreenSection):
         self.selected = False
         self.color = (80, 80, 80)
         self.txtcolor = (255, 255, 255)
-        self.width= width
+        self.width = width
 
         # Text attributes
         self.font = pygame.font.Font(PIXELFONT, 12)
         self.texts = []
 
         # Info button
-        self.buttonStep= pygame.image.load("src/img/ButtonStep.png")
-        self.buttonAll= pygame.image.load("src/img/ButtonAll.png")
-        self.buttonStart= pygame.image.load("src/img/ButtonStart.png")
-        self.buttonEnd= pygame.image.load("src/img/ButtonEnd.png")
+        self.buttonStep = pygame.image.load("src/img/ButtonStep.png")
+        self.buttonAll = pygame.image.load("src/img/ButtonAll.png")
+        self.buttonStart = pygame.image.load("src/img/ButtonStart.png")
+        self.buttonEnd = pygame.image.load("src/img/ButtonEnd.png")
 
-        # # Buttons Algoritmos
-        self.algo= [False, False, False]
+        # Buttons Algoritmos
+        # 0: DFS
+        # 1: BFS
+        # 2: IDS
+        self.algo = [False, False, False]
 
-        self.dfs1= pygame.image.load("src/img/DFS1.png")
-        self.bfs1= pygame.image.load("src/img/BFS1.png")
-        self.ids1= pygame.image.load("src/img/IDS1.png")
+        self.dfs1 = pygame.image.load("src/img/DFS1.png")
+        self.bfs1 = pygame.image.load("src/img/BFS1.png")
+        self.ids1 = pygame.image.load("src/img/IDS1.png")
 
-        self.dfs2= pygame.image.load("src/img/DFS2.png")
-        self.bfs2= pygame.image.load("src/img/BFS2.png")
-        self.ids2= pygame.image.load("src/img/IDS2.png")
+        self.dfs2 = pygame.image.load("src/img/DFS2.png")
+        self.bfs2 = pygame.image.load("src/img/BFS2.png")
+        self.ids2 = pygame.image.load("src/img/IDS2.png")
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
@@ -434,23 +441,31 @@ class BarButton(ScreenSection):
             48
         ))
 
-
-        self.screen.blit(self.buttonAll,(self.coords[0],self.coords[1]))
-        self.screen.blit(self.buttonStep,(self.coords[0]+48,self.coords[1]))
-        self.screen.blit(self.buttonStart,(self.coords[0]+48*2,self.coords[1]))
-        self.screen.blit(self.buttonEnd,(self.coords[0]+48*3,self.coords[1]))
+        self.screen.blit(self.buttonAll, (self.coords[0], self.coords[1]))
+        self.screen.blit(
+            self.buttonStep, (self.coords[0] + 48, self.coords[1]))
+        self.screen.blit(self.buttonStart,
+                         (self.coords[0] + 48 * 2, self.coords[1]))
+        self.screen.blit(
+            self.buttonEnd, (self.coords[0] + 48 * 3, self.coords[1]))
 
         if not self.algo[0]:
-            self.screen.blit(self.dfs1,(self.coords[0]+48*4,self.coords[1]))
+            self.screen.blit(
+                self.dfs1, (self.coords[0] + 48 * 4, self.coords[1]))
         else:
-            self.screen.blit(self.dfs2,(self.coords[0]+48*4,self.coords[1]))
+            self.screen.blit(
+                self.dfs2, (self.coords[0] + 48 * 4, self.coords[1]))
 
         if not self.algo[1]:
-            self.screen.blit(self.bfs1,(self.coords[0]+48*6,self.coords[1]))
+            self.screen.blit(
+                self.bfs1, (self.coords[0] + 48 * 6, self.coords[1]))
         else:
-            self.screen.blit(self.bfs2,(self.coords[0]+48*6,self.coords[1]))
+            self.screen.blit(
+                self.bfs2, (self.coords[0] + 48 * 6, self.coords[1]))
 
         if not self.algo[2]:
-            self.screen.blit(self.ids1,(self.coords[0]+48*8,self.coords[1]))
+            self.screen.blit(
+                self.ids1, (self.coords[0] + 48 * 8, self.coords[1]))
         else:
-            self.screen.blit(self.ids2,(self.coords[0]+48*8,self.coords[1]))
+            self.screen.blit(
+                self.ids2, (self.coords[0] + 48 * 8, self.coords[1]))
