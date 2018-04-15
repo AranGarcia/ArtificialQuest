@@ -97,6 +97,7 @@ class Node:
         self.parent = parent
         self.action = action
         self.cost = cost
+        self.children = []
 
     def __eq__(self, other):
         return self.coord == other.coord
@@ -169,6 +170,7 @@ class MapProblem:
         self.initial = Node(initial, 0)
         self.goal = goal
         self.explored = set([initial])
+        self.decisions = set([])
 
     def is_goal(self, node):
         """ Validates if node is the goal """
@@ -179,12 +181,14 @@ class MapProblem:
         Returns a list containing immediate children nodes.
         """
         if enhance:
-            return self.__get_children_enhanced(node)
-
-        return [Node(child, (node.cost + 1), node,
-                     self.__get_direction(node.coord, child))
-                for child in self.gmap.get_walkable(node.coord)
-                ]
+            children = self.__get_children_enhanced(node)
+        else:
+            children = [Node(child, (node.cost + 1), node,
+                             self.__get_direction(node.coord, child))
+                        for child in self.gmap.get_walkable(node.coord)
+                        ]
+        node.children.extend(children)
+        return children
 
     def __get_children_enhanced(self, node):
         walkable = [Node(w, 0, node, self.__get_direction(node.coord, w))
@@ -218,10 +222,14 @@ class MapProblem:
         child = (node.coord[0] + d[0], node.coord[1] + d[1])
 
         if enhance:
-            return self.__enh_get_child(child, node.cost + 1, node, action)
+            child = self.__enh_get_child(child, node.cost + 1, node, action)
+        else:
+            child = Node(child, (node.cost + 1), node, action) \
+                if self.gmap.is_walkable(child) else None
 
-        return Node(child, (node.cost + 1), node, action) \
-            if self.gmap.is_walkable(child) else None
+        if child:
+            node.children.append(child)
+        return child
 
     def reset_explored(self):
         self.explored = set([self.initial.coord])
@@ -279,18 +287,18 @@ def bf_search(problem, enhanced=False):
     if problem.is_goal(node):
         return Solution(SolStat.SUCCESS, node)
 
-    frontier = StateHeap()
-    frontier.push(node)
+    level = 0
+    frontier = [node]
 
     while frontier:
-        node = frontier.pop()
+        node = frontier.pop(0)
         problem.explored.add(node.coord)
 
         for child in problem.get_children(node, enhanced):
             if child.coord not in problem.explored:
                 if problem.is_goal(child):
                     return Solution(SolStat.SUCCESS, child)
-                frontier.push(child)
+                frontier.append(child)
 
     return Solution(SolStat.FAILURE)
 
@@ -418,6 +426,7 @@ def id_search(problem, actions, depth=1, increment=1, enhance=False):
         if result != SolStat.CUTOFF:
             return result
 
+        problem.initial.children.clear()
         depth += increment
         problem.reset_explored()
 
