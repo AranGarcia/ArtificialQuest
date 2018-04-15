@@ -1,7 +1,4 @@
-from . import constants
 from constants import MoveDir, Terrain, Algorithm
-import math
-
 import ai
 
 
@@ -12,8 +9,10 @@ class Hero:
         self.name = name
         self.gmap = gmap
         self.pos = pos
-        self.decisions = []
-        self.explored = set([(pos[0], pos[1])])
+        self.__start = None
+        self.__goal = None
+        self.decisions = set([])
+        self.explored = set([])
 
         # The indexes are the values returned by key pressing events from pygame
         self.movements = {
@@ -25,9 +24,6 @@ class Hero:
 
         # The actions that the agent will do in order while doing depth searches
         self.actions = None
-
-        # Initialize the explored set with the current position
-        self.look_around()
 
     def move(self, direction):
         """
@@ -73,18 +69,18 @@ class Hero:
 
         return True
 
-    def look_around(self):
+    def look_around(self, coord):
         """
         Add surroundings to the explored set
         """
+
         limx = len(self.gmap.matrix[0])
         limy = len(self.gmap.matrix)
 
-        x, y = self.pos[0], self.pos[1]
-        count = 0
+        x, y = coord[0], coord[1]
 
         self.explored.add((x, y))
-        w = self.gmap.get_walkable(self.pos)
+        w = self.gmap.get_walkable((x, y))
 
         # Look up
         if (x, y - 1) not in self.explored and 0 <= y - 1:
@@ -99,10 +95,7 @@ class Hero:
         if (x + 1, y) not in self.explored and x + 1 < limx:
             self.explored.add((x + 1, y))
 
-        if len(w) > 2:
-            self.decisions.append((self.pos[0], self.pos[1]))
-
-    def start_search(self, start, goal, algorithm, enhance):
+    def start_search(self, algorithm, enhance=False):
         """
         Starts a search algorithm from a start state to a goal state using
         breadth first, depth first or iterative deepening search.
@@ -112,25 +105,89 @@ class Hero:
         algorithm : Symbolic constant in Constants representing the type of
                     algorithm.
         enhance   : If true, redundant nodes will not be generated.
-        """
-        problem = ai.MapProblem(self.gmap, start, goal)
 
-        if algorithm == Algorithm.BFS:
-            ai.bf_search(problem, enhance)
+        Raises ValueError if:
+        - The initial and/or goal coordinate were not defined
+        - A depth search algorithm was requested but actions were not defined
+          for the hero.
+        """
+
+        if not self.__start or not self.__goal:
+            raise ValueError(' start/goal')
+
+        problem = ai.MapProblem(self.gmap, self.__start, self.__goal)
+
+        # TODO: Find out why comparison between same Enums returns False
+        if algorithm.value == Algorithm.BFS.value:
+            self.pos = self.__start
+            self.explored = set()
+
+            solution = ai.bf_search(problem, enhance)
+
+            self.update_explored(problem.explored)
+            if solution.status == ai.SolStat.SUCCESS:
+                self.pos = [solution.node.coord[0], solution.node.coord[1]]
+                Hero.__print_path(solution.node)
+                return True
+            else:
+                return False
 
         # At this point, ony depth searches remain.
         # The hero must define the order of its actions, so if they are not
         # defined an exception will ocurr
-        if(self.actions is None):
-            raise ValueError('hero must define actions before depth searches.')
+        else:
+            if(self.actions is None):
+                raise ValueError(' actions.')
 
-        if algorithm == Algorithm.DFS:
-            ai.df_search(problem, self.actions, enhance)
-        elif algorithm == Algorithm.IDS:
-            ai.id_search(problem, self.actions)
+            if algorithm.value == Algorithm.DFS.value:
+                self.pos = self.__start
+                self.explored = set()
 
-    def define_actions(self, actions):
-        self.actions = actions
+                solution = ai.df_search(problem, self.actions, enhance)
+
+                self.update_explored(problem.explored)
+                if solution.status == ai.SolStat.SUCCESS:
+                    self.pos = [solution.node.coord[0], solution.node.coord[1]]
+                    Hero.__print_path(solution.node)
+                    return True
+                else:
+                    return False
+
+            elif algorithm.value == Algorithm.IDS.value:
+                self.pos = self.__start
+                self.explored = set()
+
+                solution = ai.id_search(problem, self.actions, enhance)
+
+                self.update_explored(problem.explored)
+                if solution.status == ai.SolStat.SUCCESS:
+                    self.pos = [solution.node.coord[0], solution.node.coord[1]]
+                    Hero.__print_path(solution.node)
+                    return True
+                else:
+                    return False
+
+    def set_start(self, start):
+        self.__start = start
+
+    def set_goal(self, goal):
+        self.__goal = goal
+
+    def update_explored(self, explored):
+        for exp in explored:
+            self.look_around(exp)
+
+    @staticmethod
+    def __print_path(node):
+        path = [node]
+        dad = node.parent
+
+        while dad:
+            path.insert(0, dad)
+            dad = dad.parent
+
+        for p in path:
+            print(p)
 
 
 class Human(Hero):
@@ -149,7 +206,7 @@ class Human(Hero):
         super(Human, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: math.inf,
+            Terrain.MOUNTAIN: None,
             Terrain.LAND: 1,
             Terrain.WATER: 2,
             Terrain.SAND: 3,
@@ -173,7 +230,7 @@ class Monkey(Hero):
         super(Monkey, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: math.inf,
+            Terrain.MOUNTAIN: None,
             Terrain.LAND: 2,
             Terrain.WATER: 4,
             Terrain.SAND: 3,
@@ -197,9 +254,9 @@ class Octopus(Hero):
         super(Octopus, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: math.inf,
+            Terrain.MOUNTAIN: None,
             Terrain.LAND: 2,
             Terrain.WATER: 1,
-            Terrain.SAND: math.inf,
+            Terrain.SAND: None,
             Terrain.FOREST: 3
         }

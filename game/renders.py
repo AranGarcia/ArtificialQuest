@@ -56,13 +56,13 @@ class Renderer:
             tilecoords = ((coords[0] // 48), (coords[1] // 48))
 
             if self.block_start:
-                self.gameobjects[0].flagMap[0] == True
                 self.block_start = False
+                self.gameobjects[0].hero.set_start(tilecoords)
                 self.gameobjects[1].insert_log(
                     '>SET start: ' + str(tilecoords))
             elif self.block_goal:
-                self.gameobjects[0].flagMap[0] == True
                 self.block_goal = False
+                self.gameobjects[0].hero.set_goal(tilecoords)
                 self.gameobjects[1].insert_log('>SET goal: ' + str(tilecoords))
             else:
                 if tilecoords != self.gameobjects[0].selectedtile:
@@ -87,30 +87,35 @@ class Renderer:
 
             # Start algorithm using enhanced mode
             if coords[0] < (48):
-                if self.gameobjects[0].hero_ready():
-                    self.gameobjects[1].insert_log(
-                    '>Search' + self.gameobjects[2].selected_algorithm.name
-                )
-                else:
-                    self.gameobjects[1].insert_log('>ERROR: set parameters')
+                try:
+                    if not self.gameobjects[2].selected_algorithm:
+                        raise ValueError(' search algorithm.')
+                    self.gameobjects[0].fog_activated = True
+                    self.gameobjects[0].hero.start_search(
+                        self.gameobjects[2].selected_algorithm,
+                        True
+                    )
+                except ValueError as ve:
+                    self.gameobjects[1].insert_log('>ERROR: undefined')
+                    self.gameobjects[1].insert_log(ve.args[0])
             # Start algorithm in normal mode
             elif coords[0] < (48 * 2):
-                if self.gameobjects[0].hero_ready():
-                    self.gameobjects[1].insert_log('>NORMAL search...')
-                else:
-                    self.gameobjects[1].insert_log('>ERR: set parameters')
+                try:
+                    if not self.gameobjects[2].selected_algorithm:
+                        raise ValueError(' search algorithm.')
+                    self.gameobjects[0].fog_activated = True
+                    self.gameobjects[0].hero.start_search(
+                        self.gameobjects[2].selected_algorithm,
+                        False
+                    )
+                except ValueError as ve:
+                    self.gameobjects[1].insert_log('>ERROR: undefined')
+                    self.gameobjects[1].insert_log(ve.args[0])
 
             # Setting START node
             elif coords[0] < (48 * 3):
                 self.gameobjects[1].insert_log('>SETTING start')
                 self.block_start = True
-                # self.gameobjects[0].hero.pos = \
-                #     self.gameobjects[0].putStart(
-                #         coords, (self.width, self.height))
-
-                self.gameobjects[0].hero.explored = \
-                    set([(self.gameobjects[0].hero.pos[0],
-                          self.gameobjects[0].hero.pos[1])])
 
             # Setting GOAL node
             elif coords[0] < (48 * 4):
@@ -147,7 +152,7 @@ class Renderer:
                     self.input_actions.append(act)
                 if len(self.input_actions) == 4:
                     self.keyboard_block = False
-                    self.gameobjects[0].hero.actions
+                    self.gameobjects[0].hero.actions = self.input_actions
                     self.gameobjects[1].insert_log('>DONE receiving actions.')
                     self.gameobjects[1].insert_log(' Depth algorithm ready.')
             else:
@@ -227,8 +232,8 @@ class GameMap(ScreenSection):
         self.imgMouseStart = pygame.image.load("src/img/ButtonStart.png")
         self.imgMouseEnd = pygame.image.load("src/img/ButtonEnd.png")
 
-        # Flag ButtonStart and ButtonEnd Pos1= start, Pos2= end
-        self.flagMap = [False, False]
+        # If True, only the explored set of the hero will be visible
+        self.fog_activated = False
 
     def render(self):
         """
@@ -242,7 +247,7 @@ class GameMap(ScreenSection):
         # On the other hand, when blitting coordinates are normal (e.g. (x,y))
 
         # Si no estan los puntos de meta y fin no se activa la niebla.
-        if not (self.flagMap[0] and self.flagMap[1]):
+        if not self.fog_activated:
             # Render map as background
             for r, row in enumerate(self.gamemap.matrix):
                 for c, value in enumerate(row):
@@ -286,20 +291,6 @@ class GameMap(ScreenSection):
             y = self.selectedtile[1]
             return self.gamemap.matrix[y][x]
 
-    def ready(self):
-        """
-        Checks if the hero is ready to start searching.
-        Start, goal and actions must be defined in order to be ready.
-        """
-        return self.flagMap[0] and self.flagMap[1]
-
-    def ready_for_depth(self):
-        """
-        Checks if the hero is ready to start searching.
-        Start, goal and actions must be defined in order to be ready.
-        """
-        return all([self.flagMap[0], self.flagMap[1], self.hero.actions])
-
     def changeterrain(self, value):
         """ Changes the terrain selected by the cursor on the map """
         x = self.selectedtile[0]
@@ -308,8 +299,6 @@ class GameMap(ScreenSection):
 
     def movehero(self, value):
         self.hero.move(value)
-
-        self.hero.look_around()
 
     def __set_hero_pos(self, gmap):
         """
@@ -326,12 +315,6 @@ class GameMap(ScreenSection):
                 if gmap.matrix[j][i] != TERRAINS.WALL.value:
                     return [i, j]
         return None
-
-    def putStart(self, coords, size):
-        pass
-
-    def putEnd(self, coords, size):
-        pass
 
 
 class LogSection(ScreenSection):
