@@ -33,42 +33,6 @@ class Hero:
 
         return self.movements[direction]()
 
-    def __moveup(self):
-        try:
-            if self.gmap.matrix[self.pos[1] - 1][self.pos[0]] != Terrain.WALL.value:
-                self.pos[1] -= 1
-        except IndexError:
-            return False
-
-        return True
-
-    def __movedown(self):
-        try:
-            if self.gmap.matrix[self.pos[1] + 1][self.pos[0]] != Terrain.WALL.value:
-                self.pos[1] += 1
-        except IndexError:
-            return False
-
-        return True
-
-    def __moveright(self):
-        try:
-            if self.gmap.matrix[self.pos[1]][self.pos[0] + 1] != Terrain.WALL.value:
-                self.pos[0] += 1
-        except IndexError:
-            return False
-
-        return True
-
-    def __moveleft(self):
-        try:
-            if self.gmap.matrix[self.pos[1]][self.pos[0] - 1] != Terrain.WALL.value:
-                self.pos[0] -= 1
-        except IndexError:
-            return False
-
-        return True
-
     def look_around(self, coord):
         """
         Add surroundings to the explored set
@@ -81,6 +45,9 @@ class Hero:
 
         self.explored.add((x, y))
         w = self.gmap.get_walkable((x, y))
+
+        if len(w) == 1 or len(w) > 2:
+            self.decisions.add((x, y))
 
         # Look up
         if (x, y - 1) not in self.explored and 0 <= y - 1:
@@ -119,18 +86,7 @@ class Hero:
 
         # TODO: Find out why comparison between same Enums returns False
         if algorithm.value == Algorithm.BFS.value:
-            self.pos = self.__start
-            self.explored = set()
-
             solution = ai.bf_search(problem, enhance)
-
-            self.update_explored(problem.explored)
-            if solution.status == ai.SolStat.SUCCESS:
-                self.pos = [solution.node.coord[0], solution.node.coord[1]]
-                Hero.__print_path(solution.node)
-                return True
-            else:
-                return False
 
         # At this point, ony depth searches remain.
         # The hero must define the order of its actions, so if they are not
@@ -139,33 +95,33 @@ class Hero:
             if(self.actions is None):
                 raise ValueError(' actions.')
 
-            if algorithm.value == Algorithm.DFS.value:
-                self.pos = self.__start
-                self.explored = set()
-
+            elif algorithm.value == Algorithm.DFS.value:
                 solution = ai.df_search(problem, self.actions, enhance)
 
-                self.update_explored(problem.explored)
-                if solution.status == ai.SolStat.SUCCESS:
-                    self.pos = [solution.node.coord[0], solution.node.coord[1]]
-                    Hero.__print_path(solution.node)
-                    return True
-                else:
-                    return False
-
             elif algorithm.value == Algorithm.IDS.value:
-                self.pos = self.__start
-                self.explored = set()
+                solution = ai.id_search(problem, self.actions, 1, 1, enhance)
 
-                solution = ai.id_search(problem, self.actions, enhance)
+        # This helps the renderer restart the map
+        self.pos = self.__start
+        self.explored.clear()
+        self.decisions.clear()
+        self.update_explored(problem.explored)
 
-                self.update_explored(problem.explored)
-                if solution.status == ai.SolStat.SUCCESS:
-                    self.pos = [solution.node.coord[0], solution.node.coord[1]]
-                    Hero.__print_path(solution.node)
-                    return True
-                else:
-                    return False
+        if solution.status == ai.SolStat.SUCCESS:
+            self.pos = [solution.node.coord[0], solution.node.coord[1]]
+            path = Hero.__get_path(solution.node)
+
+            print('Path from START to GOAL is: ', end='')
+            for p in path:
+                print(p.coord, end=' ')
+            print('\n')
+
+            print('Tree:')
+            Hero.__print_tree(path[0])
+
+            return True
+        else:
+            return False
 
     def set_start(self, start):
         self.__start = start
@@ -178,7 +134,7 @@ class Hero:
             self.look_around(exp)
 
     @staticmethod
-    def __print_path(node):
+    def __get_path(node):
         path = [node]
         dad = node.parent
 
@@ -186,8 +142,50 @@ class Hero:
             path.insert(0, dad)
             dad = dad.parent
 
-        for p in path:
-            print(p)
+        return path
+
+    @staticmethod
+    def __print_tree(node, level=0):
+        print('    ' * level, sep='', end='')
+        print('|---', node.coord, sep='')
+        for child in node.children:
+            Hero.__print_tree(child, level + 1)
+
+    def __moveup(self):
+        try:
+            if self.gmap.matrix[self.pos[1] - 1][self.pos[0]] != Terrain.WALL.value:
+                self.pos[1] -= 1
+        except IndexError:
+            return False
+
+        return True
+
+    def __movedown(self):
+        try:
+            if self.gmap.matrix[self.pos[1] + 1][self.pos[0]] != Terrain.WALL.value:
+                self.pos[1] += 1
+        except IndexError:
+            return False
+
+        return True
+
+    def __moveright(self):
+        try:
+            if self.gmap.matrix[self.pos[1]][self.pos[0] + 1] != Terrain.WALL.value:
+                self.pos[0] += 1
+        except IndexError:
+            return False
+
+        return True
+
+    def __moveleft(self):
+        try:
+            if self.gmap.matrix[self.pos[1]][self.pos[0] - 1] != Terrain.WALL.value:
+                self.pos[0] -= 1
+        except IndexError:
+            return False
+
+        return True
 
 
 class Human(Hero):

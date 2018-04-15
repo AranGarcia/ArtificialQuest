@@ -91,10 +91,15 @@ class Renderer:
                     if not self.gameobjects[2].selected_algorithm:
                         raise ValueError(' search algorithm.')
                     self.gameobjects[0].fog_activated = True
-                    self.gameobjects[0].hero.start_search(
+                    result = self.gameobjects[0].hero.start_search(
                         self.gameobjects[2].selected_algorithm,
                         True
                     )
+                    if result:
+                        self.gameobjects[1].insert_log('>SUCCESS')
+                    else:
+                        self.gameobjects[1].insert_log('>FAILURE')
+                    self.input_actions.clear()
                 except ValueError as ve:
                     self.gameobjects[1].insert_log('>ERROR: undefined')
                     self.gameobjects[1].insert_log(ve.args[0])
@@ -104,10 +109,15 @@ class Renderer:
                     if not self.gameobjects[2].selected_algorithm:
                         raise ValueError(' search algorithm.')
                     self.gameobjects[0].fog_activated = True
-                    self.gameobjects[0].hero.start_search(
+                    result = self.gameobjects[0].hero.start_search(
                         self.gameobjects[2].selected_algorithm,
                         False
                     )
+                    if result:
+                        self.gameobjects[1].insert_log('>SUCCESS')
+                    else:
+                        self.gameobjects[1].insert_log('>FAILURE')
+                    self.input_actions.clear()
                 except ValueError as ve:
                     self.gameobjects[1].insert_log('>ERROR: undefined')
                     self.gameobjects[1].insert_log(ve.args[0])
@@ -160,7 +170,7 @@ class Renderer:
                 self.gameobjects[1].insert_log('>ERROR: use only arrows')
                 self.gameobjects[1].insert_log(' to input directions.')
                 self.gameobjects[2].selected_algorithm = None
-                self.input_actions = []
+                self.input_actions.clear()
         else:
             # Movement
             if event.key in ARROWEVENTS:
