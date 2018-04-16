@@ -109,7 +109,7 @@ class Renderer:
                     if not self.gameobjects[2].selected_algorithm:
                         raise ValueError(' search algorithm.')
                     self.gameobjects[0].fog_activated = True
-                    resuslt = self.gameobjects[0].hero.start_search(
+                    result = self.gameobjects[0].hero.start_search(
                         self.gameobjects[2].selected_algorithm,
                         False
                     )
