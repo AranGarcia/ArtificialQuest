@@ -13,9 +13,8 @@ class Game(object):
     images on screen
     """
 
-    def __init__(self):
-
-        self.gamemap = maps.Map('src/maps/dungeon')
+    def __init__(self, typeMap):
+        self.gamemap = maps.Map('src/maps/mission1' if typeMap else 'src/maps/dungeon')
         self.width = len(self.gamemap.matrix[0]) * 48 + 300
         self.height = len(self.gamemap.matrix) * 48 + 48
 

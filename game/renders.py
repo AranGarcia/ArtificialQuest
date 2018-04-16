@@ -215,7 +215,7 @@ class GameMap(ScreenSection):
         self.landtiles = {
             TERRAINS.WALL.value: pygame.image.load('src/img/wall.png'),
             TERRAINS.ROAD.value: pygame.image.load('src/img/road.png'),
-            TERRAINS.MOUNTAIN.value: pygame.image.load('src/img/mountain.png'),
+            TERRAINS.MOUNTAIN.value: pygame.image.load('src/img/mountain.jpeg'),
             TERRAINS.LAND.value: pygame.image.load('src/img/land.png'),
             TERRAINS.WATER.value: pygame.image.load('src/img/water.png'),
             TERRAINS.SAND.value: pygame.image.load('src/img/sand.png'),
