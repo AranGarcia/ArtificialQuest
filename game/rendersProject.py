@@ -13,7 +13,7 @@ KPEVENTS = set(['0', '1', '2', '3', '4', '5', '6'])
 ARROWEVENTS = set([273, 274, 275, 276])
 
 
-class Renderer:
+class RendererProject:
     """ Manager of the objects to be rendered in the game. """
 
     def __init__(self, gamedisplay, gamemap, width, height):
@@ -57,12 +57,12 @@ class Renderer:
 
             if self.block_start:
                 self.block_start = False
-                self.gameobjects[0].hero.set_start(tilecoords)
+                self.gameobjects[0].human.set_start(tilecoords)
                 self.gameobjects[1].insert_log(
                     '>SET start: ' + str(tilecoords))
             elif self.block_goal:
                 self.block_goal = False
-                self.gameobjects[0].hero.set_goal(tilecoords)
+                self.gameobjects[0].human.set_goal(tilecoords)
                 self.gameobjects[1].insert_log('>SET goal: ' + str(tilecoords))
             else:
                 if tilecoords != self.gameobjects[0].selectedtile:
@@ -87,70 +87,21 @@ class Renderer:
 
             # Start algorithm using enhanced mode
             if coords[0] < (48):
-                try:
-                    if not self.gameobjects[2].selected_algorithm:
-                        raise ValueError(' search algorithm.')
-                    self.gameobjects[0].fog_activated = True
-                    result = self.gameobjects[0].hero.start_search(
-                        self.gameobjects[2].selected_algorithm,
-                        True
-                    )
-                    if result:
-                        self.gameobjects[1].insert_log('>SUCCESS')
-                    else:
-                        self.gameobjects[1].insert_log('>FAILURE')
-                    self.input_actions.clear()
-                except ValueError as ve:
-                    self.gameobjects[1].insert_log('>ERROR: undefined')
-                    self.gameobjects[1].insert_log(ve.args[0])
-            # Start algorithm in normal mode
+                print ("Human")
             elif coords[0] < (48 * 2):
-                try:
-                    if not self.gameobjects[2].selected_algorithm:
-                        raise ValueError(' search algorithm.')
-                    self.gameobjects[0].fog_activated = True
-                    result = self.gameobjects[0].hero.start_search(
-                        self.gameobjects[2].selected_algorithm,
-                        False
-                    )
-                    if result:
-                        self.gameobjects[1].insert_log('>SUCCESS')
-                    else:
-                        self.gameobjects[1].insert_log('>FAILURE')
-                    self.input_actions.clear()
-                except ValueError as ve:
-                    self.gameobjects[1].insert_log('>ERROR: undefined')
-                    self.gameobjects[1].insert_log(ve.args[0])
-
-            # Setting START node
+                print ("Monkey")
             elif coords[0] < (48 * 3):
-                self.gameobjects[1].insert_log('>SETTING start')
-                self.block_start = True
-
-            # Setting GOAL node
+                print ("Octopus")
             elif coords[0] < (48 * 4):
-                # self.gameobjects[0].putEnd(coords, (self.width, self.height))
-                self.gameobjects[1].insert_log('>SETTING goal')
-                self.block_goal = True
-
-            # DFS
+                print ("P")
+            elif coords[0] < (48 * 5):
+                print ("K")
             elif coords[0] < (48 * 6):
-                self.gameobjects[1].insert_log('>Depth first search.')
-                self.gameobjects[2].selected_algorithm = const.Algorithm.DFS
-                if len(self.input_actions) < 4:
-                    self.gameobjects[1].insert_log(' Input actions in order.')
-                    self.keyboard_block = True
-            # BFS
+                print ("S")
+            elif coords[0] < (48 * 7):
+                print ("T")
             elif coords[0] < (48 * 8):
-                self.gameobjects[1].insert_log('>Breadth first search.')
-                self.gameobjects[2].selected_algorithm = const.Algorithm.BFS
-            # IDS
-            elif coords[0] < (48 * 10):
-                self.gameobjects[1].insert_log('>Iterative deepening.')
-                self.gameobjects[2].selected_algorithm = const.Algorithm.IDS
-                if len(self.input_actions) < 4:
-                    self.gameobjects[1].insert_log(' Input actions in order.')
-                    self.keyboard_block = True
+                print ("Star")
 
     def keypressed(self, event):
         """ Render on key press event. """
@@ -162,7 +113,7 @@ class Renderer:
                     self.input_actions.append(act)
                 if len(self.input_actions) == 4:
                     self.keyboard_block = False
-                    self.gameobjects[0].hero.actions = self.input_actions
+                    self.gameobjects[0].human.actions = self.input_actions
                     self.gameobjects[1].insert_log('>DONE receiving actions.')
                     self.gameobjects[1].insert_log(' Depth algorithm ready.')
             else:
@@ -229,17 +180,15 @@ class GameMap(ScreenSection):
 
         # Decision indicator
         self.decisionimg = pygame.image.load('src/img/decision.png')
-        # Hero position
-        # heropos -> (x,y)
-        self.hero = heroes.Human(
-            'Isildur',
-            gamemap,
-            self.__set_hero_pos(gamemap)
-        )
-        self.heroimg = pygame.image.load('src/img/human.png')
 
-        # If True, only the explored set of the hero will be visible
-        self.fog_activated = False
+        # Character features
+        self.human = None
+        self.monkey = None
+        self.octopus = None
+
+        self.humanImg = pygame.image.load('src/img/human.png')
+        self.monkeyImg = pygame.image.load('src/img/monkey.png')
+        self.octopusImg = pygame.image.load('src/img/octopus.png')
 
     def render(self):
         """
@@ -252,30 +201,37 @@ class GameMap(ScreenSection):
         # coordinates go first (e.g. matirx[y][x]).
         # On the other hand, when blitting coordinates are normal (e.g. (x,y))
 
-        # Si no estan los puntos de meta y fin no se activa la niebla.
-        if not self.fog_activated:
-            # Render map as background
-            for r, row in enumerate(self.gamemap.matrix):
-                for c, value in enumerate(row):
-                    self.screen.blit(self.landtiles[value], (c * 48, r * 48))
+        for r, row in enumerate(self.gamemap.matrix):
+            for c, value in enumerate(row):
+                self.screen.blit(self.landtiles[value], (c * 48, r * 48))
 
-        else:
-            # Fog of war
-            self.screen.fill((0, 0, 0))
+        # When they have positions
+        if self.human != None:
+            # Render human
+            self.screen.blit(
+                self.humanImg, (self.human.pos[0] * 48, self.human.pos[1] * 48))
 
-            # Render only explored parts of the map
-            for exp in self.hero.explored:
-                terr = self.gamemap.matrix[exp[1]][exp[0]]
-                self.screen.blit(
-                    self.landtiles[terr], (exp[0] * 48, exp[1] * 48))
+            # Draw indicator where decisions where made
+            for dcs in self.human.decisions:
+                self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
+        if self.monkey != None:
+            # Render monkey
+            self.screen.blit(
+                self.monkeyImg,
+                (self.monkey.pos[0] * 48, self.monkey.pos[1] * 48))
 
-        # Draw indicator where decisions where made
-        for dcs in self.hero.decisions:
-            self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
+            # Draw indicator where decisions where made
+            for dcs in self.monkey.decisions:
+                self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
+        if self.octopus != None:
+            # Render octopus
+            self.screen.blit(
+                self.octopusImg,
+                (self.octopus.pos[0] * 48, self.octopus.pos[1] * 48))
 
-        # Render hero
-        self.screen.blit(
-            self.heroimg, (self.hero.pos[0] * 48, self.hero.pos[1] * 48))
+            # Draw indicator where decisions where made
+            for dcs in self.octopus.decisions:
+                self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
 
         # If seleciton active, render cursor
         if self.selectedtile:
@@ -304,24 +260,9 @@ class GameMap(ScreenSection):
         self.gamemap.matrix[y][x] = value
 
     def movehero(self, value):
-        self.hero.move(value)
-
-    def __set_hero_pos(self, gmap):
-        """
-        set_hero_pos(GameMap) -> [x, y]
-
-        Looks for the leftmost walkable tile on which to place the hero. If None
-        is returned, then there is no available place for the hero to be placed.
-        """
-        numrows = len(gmap.matrix)
-        numcols = len(gmap.matrix[0])
-
-        for i in range(numcols):
-            for j in range(numrows):
-                if gmap.matrix[j][i] != TERRAINS.WALL.value:
-                    return [i, j]
-        return None
-
+        self.human.move(value)
+        self.monkey.move(value)
+        self.octopus.move(value)
 
 class LogSection(ScreenSection):
     """
@@ -382,21 +323,15 @@ class BarButton(ScreenSection):
         self.width = width
 
         # Info button
-        self.buttonStep = pygame.image.load("src/img/ButtonStep.png")
-        self.buttonAll = pygame.image.load("src/img/ButtonAll.png")
-        self.buttonStart = pygame.image.load("src/img/ButtonStart.png")
-        self.buttonEnd = pygame.image.load("src/img/ButtonEnd.png")
+        self.buttonHuman = pygame.image.load("src/img/human.png")
+        self.buttonMonkey = pygame.image.load("src/img/monkey.png")
+        self.buttonOctopus = pygame.image.load("src/img/octopus.png")
+        self.buttonStar = pygame.image.load("src/img/star.png")
+        self.buttonP = pygame.image.load("src/img/letterP.png")
+        self.buttonK = pygame.image.load("src/img/letterK.png")
+        self.buttonS = pygame.image.load("src/img/letterS.png")
+        self.buttonT = pygame.image.load("src/img/letterT.png")
 
-        # Symbolic constant fon constants
-        self.selected_algorithm = None
-
-        self.dfs1 = pygame.image.load("src/img/DFS1.png")
-        self.bfs1 = pygame.image.load("src/img/BFS1.png")
-        self.ids1 = pygame.image.load("src/img/IDS1.png")
-
-        self.dfs2 = pygame.image.load("src/img/DFS2.png")
-        self.bfs2 = pygame.image.load("src/img/BFS2.png")
-        self.ids2 = pygame.image.load("src/img/IDS2.png")
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
@@ -406,38 +341,23 @@ class BarButton(ScreenSection):
             48
         ))
 
-        # Search mode buttons
-        self.screen.blit(self.buttonAll, (self.coords[0], self.coords[1]))
+        # Position of characters
+        self.screen.blit(self.buttonHuman, (self.coords[0], self.coords[1]))
         self.screen.blit(
-            self.buttonStep, (self.coords[0] + 48, self.coords[1]))
-
-        # Start - Goal buttons
-        self.screen.blit(self.buttonStart,
-                         (self.coords[0] + 48 * 2, self.coords[1]))
+            self.buttonMonkey, (self.coords[0] + 48, self.coords[1]))
         self.screen.blit(
-            self.buttonEnd, (self.coords[0] + 48 * 3, self.coords[1]))
+            self.buttonOctopus, (self.coords[0] + 48 * 2, self.coords[1]))
 
-        # Algorithm buttons
-        # Depth first search button
-        if self.selected_algorithm == const.Algorithm.DFS:
-            self.screen.blit(
-                self.dfs2, (self.coords[0] + 48 * 4, self.coords[1]))
-        else:
-            self.screen.blit(
-                self.dfs1, (self.coords[0] + 48 * 4, self.coords[1]))
+        # Game's features
+        self.screen.blit(
+            self.buttonP, (self.coords[0] + 48 * 3, self.coords[1]))
+        self.screen.blit(
+            self.buttonK, (self.coords[0] + 48 * 4, self.coords[1]))
+        self.screen.blit(
+            self.buttonS, (self.coords[0] + 48 * 5, self.coords[1]))
+        self.screen.blit(
+            self.buttonT, (self.coords[0] + 48 * 6, self.coords[1]))
 
-        # Breadth first search button
-        if self.selected_algorithm == const.Algorithm.BFS:
-            self.screen.blit(
-                self.bfs2, (self.coords[0] + 48 * 6, self.coords[1]))
-        else:
-            self.screen.blit(
-                self.bfs1, (self.coords[0] + 48 * 6, self.coords[1]))
-
-        # Iterative deepening search button
-        if self.selected_algorithm == const.Algorithm.IDS:
-            self.screen.blit(
-                self.ids2, (self.coords[0] + 48 * 8, self.coords[1]))
-        else:
-            self.screen.blit(
-                self.ids1, (self.coords[0] + 48 * 8, self.coords[1]))
+        # Algorithm A*
+        self.screen.blit(
+        self.buttonStar, (self.coords[0] + 48 * 7, self.coords[1]))

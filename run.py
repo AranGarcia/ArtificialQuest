@@ -11,9 +11,9 @@ if len(sys.argv) < 2:
 else:
     if sys.argv[1] == "practice2":
         game = aqgame.Game(False)
-        game.run()
+        game.run(False)
     elif sys.argv[1] == "project":
         game = aqgame.Game(True)
-        game.run()
+        game.run(True)
     else:
         print ("This option is not valid.")
