@@ -82,7 +82,6 @@ class Renderer:
 
         # Algorithm Buttons
         elif coords[1] > (self.height - 48):
-            self.click_block = False
             self.gameobjects[0].selectedtile = None
 
             # Start algorithm using enhanced mode
