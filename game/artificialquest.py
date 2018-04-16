@@ -4,7 +4,7 @@ all the event handling and rendering of the simulation.
 '''
 import pygame
 from questlogic import maps
-from . import renders
+from . import renders, rendersProject
 
 class Game(object):
     """
@@ -13,9 +13,8 @@ class Game(object):
     images on screen
     """
 
-    def __init__(self):
-
-        self.gamemap = maps.Map('src/maps/dungeon')
+    def __init__(self, typeGame):
+        self.gamemap = maps.Map('src/maps/mission1' if typeGame else 'src/maps/dungeon')
         self.width = len(self.gamemap.matrix[0]) * 48 + 300
         self.height = len(self.gamemap.matrix) * 48 + 48
 
@@ -28,9 +27,10 @@ class Game(object):
 
         self.clk = pygame.time.Clock()
         self.renderer = \
-            renders.Renderer(self.screen, self.gamemap, self.width, self.height)
+            rendersProject.RendererProject(self.screen, self.gamemap, self.width, self.height) \
+            if typeGame else renders.Renderer(self.screen, self.gamemap, self.width, self.height)
 
-    def run(self):
+    def run(self, typeGame):
         ''' Starts rendering game objects and opens the window. '''
 
         while True:
