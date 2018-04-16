@@ -20,19 +20,20 @@ class RendererProject:
         self.screen = gamedisplay
         self.width = width
         self.height = height
+        self.gamemap= gamemap
 
         # Rendered objects
         self.gameobjects = [
-            GameMap(self.screen, (0, 0), gamemap),
+            GameMap(self.screen, (0, 0), self.gamemap),
             LogSection(self.screen, height - 48, (width - 300, 0)),
             BarButton(self.screen, width, (0, len(gamemap.matrix) * 48))
         ]
 
         # Attributes for blocking clicks and keyboard events
         self.keyboard_block = False
-        self.block_start = False
-        self.block_goal = False
+        self.block_start = None
         self.input_actions = []
+        self.flagStone= 0
 
         # Key event mapping to constants
         self.key_actions = {
@@ -54,16 +55,48 @@ class RendererProject:
         # Activate cursor if click was on the map
         if coords[0] < (self.width - 300) and coords[1] < (self.height - 48):
             tilecoords = ((coords[0] // 48), (coords[1] // 48))
+            tilecoordsImgs = ((coords[0]), (coords[1]))
 
-            if self.block_start:
-                self.block_start = False
-                self.gameobjects[0].human.set_start(tilecoords)
-                self.gameobjects[1].insert_log(
-                    '>SET start: ' + str(tilecoords))
-            elif self.block_goal:
-                self.block_goal = False
-                self.gameobjects[0].human.set_goal(tilecoords)
-                self.gameobjects[1].insert_log('>SET goal: ' + str(tilecoords))
+            if self.block_start != 0:
+                if self.block_start == 1:
+                    self.gameobjects[0].human= heroes.Human('Isildur',
+                        self.gamemap, list(tilecoords))
+                    self.gameobjects[0].human.set_start(tilecoords)
+                    self.gameobjects[1].insert_log(
+                        '>SET start human: ' + str(tilecoords))
+                elif self.block_start == 2:
+                    self.gameobjects[0].monkey= heroes.Monkey('Boots',
+                        self.gamemap, list(tilecoords))
+                    self.gameobjects[0].monkey.set_start(tilecoords)
+                    self.gameobjects[1].insert_log(
+                        '>SET start monkey: ' + str(tilecoords))
+                elif self.block_start == 3:
+                    self.gameobjects[0].octopus= heroes.Octopus('Dave',
+                        self.gamemap, list(tilecoords))
+                    self.gameobjects[0].octopus.set_start(tilecoords)
+                    self.gameobjects[1].insert_log(
+                        '>SET start octopus: ' + str(tilecoords))
+                elif self.block_start == 4:
+                    self.gameobjects[0].positionP= tilecoords
+                    self.gameobjects[1].insert_log(
+                        '>SET Portal: ' + str(tilecoords))
+                elif self.block_start == 5:
+                    self.gameobjects[0].positionK= tilecoords
+                    self.gameobjects[1].insert_log(
+                        '>SET Key: ' + str(tilecoords))
+                elif self.block_start == 6:
+                    self.gameobjects[0].positionS[self.flagStone]= tilecoords
+                    self.gameobjects[1].insert_log(
+                        '>SET Stone ' + str(self.flagStone) + ': '
+                        + str(tilecoords))
+                    self.flagStone += 1
+                    if self.flagStone > 2:
+                        self.flagStone = 0
+                elif self.block_start == 7:
+                    self.gameobjects[0].positionT= tilecoords
+                    self.gameobjects[1].insert_log(
+                        '>SET Temple: ' + str(tilecoords))
+                self.block_start = 0
             else:
                 if tilecoords != self.gameobjects[0].selectedtile:
                     # Selection cursor on map
@@ -80,28 +113,32 @@ class RendererProject:
                     # Deactivates cursor if clicked on same selected tile
                     self.gameobjects[0].selectedtile = None
 
-        # Algorithm Buttons
+        # Bar of Buttons
         elif coords[1] > (self.height - 48):
-            self.click_block = False
             self.gameobjects[0].selectedtile = None
 
             # Start algorithm using enhanced mode
             if coords[0] < (48):
-                print ("Human")
+                self.block_start= 1
             elif coords[0] < (48 * 2):
-                print ("Monkey")
+                self.block_start= 2
             elif coords[0] < (48 * 3):
-                print ("Octopus")
+                self.block_start= 3
             elif coords[0] < (48 * 4):
                 print ("P")
+                self.block_start= 4
             elif coords[0] < (48 * 5):
                 print ("K")
+                self.block_start= 5
             elif coords[0] < (48 * 6):
                 print ("S")
+                self.block_start= 6
             elif coords[0] < (48 * 7):
                 print ("T")
+                self.block_start= 7
             elif coords[0] < (48 * 8):
                 print ("Star")
+                self.block_start= 8
 
     def keypressed(self, event):
         """ Render on key press event. """
@@ -189,6 +226,20 @@ class GameMap(ScreenSection):
         self.humanImg = pygame.image.load('src/img/human.png')
         self.monkeyImg = pygame.image.load('src/img/monkey.png')
         self.octopusImg = pygame.image.load('src/img/octopus.png')
+        self.starImg = pygame.image.load("src/img/star.png")
+        self.pImg = pygame.image.load("src/img/letterP.png")
+        self.kImg = pygame.image.load("src/img/letterK.png")
+        self.sImg = pygame.image.load("src/img/letterS.png")
+        self.tImg = pygame.image.load("src/img/letterT.png")
+
+        # Block for don't print images
+        self.blockImg= True
+
+        # Item positions
+        self.positionP= None
+        self.positionK= None
+        self.positionS= [None, None, None]
+        self.positionT= None
 
     def render(self):
         """
@@ -204,6 +255,24 @@ class GameMap(ScreenSection):
         for r, row in enumerate(self.gamemap.matrix):
             for c, value in enumerate(row):
                 self.screen.blit(self.landtiles[value], (c * 48, r * 48))
+
+        # Render Items when they have positions
+        if self.positionP != None:
+            self.screen.blit(
+                self.pImg, (self.positionP[0] * 48, self.positionP[1] * 48))
+
+        if self.positionK != None:
+            self.screen.blit(
+                self.kImg, (self.positionK[0] * 48, self.positionK[1] * 48))
+
+        for stone in self.positionS:
+            if stone != None:
+                self.screen.blit(
+                    self.sImg, (stone[0] * 48, stone[1] * 48))
+
+        if self.positionT != None:
+            self.screen.blit(
+                self.tImg, (self.positionT[0] * 48, self.positionT[1] * 48))
 
         # When they have positions
         if self.human != None:
