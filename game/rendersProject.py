@@ -62,20 +62,20 @@ class RendererProject:
                     self.gameobjects[0].human= heroes.Human('Isildur',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].human.set_start(tilecoords)
-                    self.gameobjects[1].insert_log(
-                        '>SET start human: ' + str(tilecoords))
+                    self.gameobjects[1].insert_log('>SET start human:')
+                    self.gameobjects[1].insert_log(str(tilecoords))
                 elif self.block_start == 2:
                     self.gameobjects[0].monkey= heroes.Monkey('Boots',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].monkey.set_start(tilecoords)
-                    self.gameobjects[1].insert_log(
-                        '>SET start monkey: ' + str(tilecoords))
+                    self.gameobjects[1].insert_log('>SET start monkey:')
+                    self.gameobjects[1].insert_log(str(tilecoords))
                 elif self.block_start == 3:
                     self.gameobjects[0].octopus= heroes.Octopus('Dave',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].octopus.set_start(tilecoords)
-                    self.gameobjects[1].insert_log(
-                        '>SET start octopus: ' + str(tilecoords))
+                    self.gameobjects[1].insert_log('>SET start octopus:')
+                    self.gameobjects[1].insert_log(str(tilecoords))
                 elif self.block_start == 4:
                     self.gameobjects[0].positionP= tilecoords
                     self.gameobjects[1].insert_log(
@@ -125,20 +125,24 @@ class RendererProject:
             elif coords[0] < (48 * 3):
                 self.block_start= 3
             elif coords[0] < (48 * 4):
-                print ("P")
                 self.block_start= 4
             elif coords[0] < (48 * 5):
-                print ("K")
                 self.block_start= 5
             elif coords[0] < (48 * 6):
-                print ("S")
                 self.block_start= 6
             elif coords[0] < (48 * 7):
-                print ("T")
                 self.block_start= 7
             elif coords[0] < (48 * 8):
-                print ("Star")
                 self.block_start= 8
+            elif coords[0] < (48 * 9):
+                self.block_start= 9
+                self.gameobjects = [
+                    GameMap(self.screen, (0, 0), self.gamemap),
+                    LogSection(self.screen, self.height - 48,
+                        (self.width - 300, 0)),
+                    BarButton(self.screen, self.width,
+                        (0, len(self.gamemap.matrix) * 48))
+                ]
 
     def keypressed(self, event):
         """ Render on key press event. """
@@ -395,11 +399,12 @@ class BarButton(ScreenSection):
         self.buttonHuman = pygame.image.load("src/img/human.png")
         self.buttonMonkey = pygame.image.load("src/img/monkey.png")
         self.buttonOctopus = pygame.image.load("src/img/octopus.png")
-        self.buttonStar = pygame.image.load("src/img/star.png")
         self.buttonP = pygame.image.load("src/img/letterP.png")
         self.buttonK = pygame.image.load("src/img/letterK.png")
         self.buttonS = pygame.image.load("src/img/letterS.png")
         self.buttonT = pygame.image.load("src/img/letterT.png")
+        self.buttonStar = pygame.image.load("src/img/star.png")
+        self.buttonRestart = pygame.image.load("src/img/restart.png")
 
 
     def render(self):
@@ -429,4 +434,8 @@ class BarButton(ScreenSection):
 
         # Algorithm A*
         self.screen.blit(
-        self.buttonStar, (self.coords[0] + 48 * 7, self.coords[1]))
+            self.buttonStar, (self.coords[0] + 48 * 7, self.coords[1]))
+
+        # Reset GameMap
+        self.screen.blit(
+            self.buttonRestart, (self.coords[0] + 48 * 8, self.coords[1]))
