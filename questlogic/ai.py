@@ -17,9 +17,11 @@ Each search algorithm returns a Solution object that can represent a FAILURE or
 a SUCCESS.
 """
 
+import math
+
 from enum import Enum
 from heapq import heapify, heappush, heappop
-from constants import MoveDir
+from constants import MoveDir, Terrain
 
 #####################################
 # Data structures used in searching #
@@ -38,13 +40,13 @@ class HeapNode:
         self.state = state
 
     def __eq__(self, other):
-        return self.state.cost == other.state.cost
+        return self.state.f == other.state.f
 
     def __gt__(self, other):
-        return self.state.cost > other.state.cost
+        return self.state.f > other.state.f
 
     def __lt__(self, other):
-        return self.state.cost < other.state.cost
+        return self.state.f < other.state.f
 
 
 class StateHeap:
@@ -77,6 +79,9 @@ class StateHeap:
         in such a way that the structure is not lost.
         """
         return heappop(self.heap).state
+
+    def empty(self):
+        return len(self.heap) == 0
 
     def __len__(self):
         return len(self.heap)
@@ -112,6 +117,26 @@ class Node:
         )
 
 
+class HNode(Node):
+    """
+    Extension of Node for heuristic searches. This data structure includes
+    Accumulative costs and manhattan distance from the state to the goal.
+    """
+
+    def __init__(self, coord, cost, parent=None, action=None, ac=0, dist=0):
+        super(HNode, self).__init__(coord, cost, parent, action)
+        # Heuristic attributes
+        self.acc_cost = ac
+        self.dist = dist
+        self.f = ac + dist
+
+    def hfunc(self):
+        return self.acc_cost + self.dist
+
+    def __str__(self):
+        return 'HNode<C:%s, D:%d>' % (self.coord, self.dist)
+
+
 class SolStat(Enum):
     """
     Symbolic constants that represent the status of the solution.
@@ -132,9 +157,10 @@ class Solution:
     - Node:   This field will be set with a node only if the status is SUCCESS.
     """
 
-    def __init__(self, status, node=None):
+    def __init__(self, status, node=None, arg=None):
         self.status = status
         self.node = node
+        self.arg = arg
 
     def __str__(self):
         return 'Solution<%s - %s>' % (self.status, self.node)
@@ -165,12 +191,13 @@ class MapProblem:
     state, and a goal state.
     """
 
-    def __init__(self, gmap, initial, goal):
+    def __init__(self, gmap, initial, goal, costs=None):
         self.gmap = gmap
         self.initial = Node(initial, 0)
         self.goal = goal
         self.explored = set([initial])
         self.decisions = set([])
+        self.costs = costs
 
     def is_goal(self, node):
         """ Validates if node is the goal """
@@ -231,6 +258,27 @@ class MapProblem:
             node.children.append(child)
         return child
 
+    def get_succesors(self, node):
+        return [
+            HNode(
+                s[0], self.costs[s[1]], node,
+                self.__get_direction(node.coord, s[0]),
+                node.acc_cost + self.costs[s[1]],
+                self.__manhattan(s[0])
+            ) for s in self.gmap.get_terrains(node.coord)
+        ]
+
+    def heuristic_init(self):
+        """
+        Initiates the initial state for a heuristic search, which only consists
+        of establishing the manhattan distance form the start to the goal.
+        """
+
+        self.initial = HNode(
+            self.initial.coord, 0,
+            dist=self.__manhattan(self.initial.coord)
+        )
+
     def reset_explored(self):
         self.explored = set([self.initial.coord])
 
@@ -258,6 +306,10 @@ class MapProblem:
 
     def __get_direction(self, u, v):
         return DIR_DIFF[(u[0] - v[0], u[1] - v[1])]
+
+    def __manhattan(self, coord):
+        return math.fabs(coord[0] - self.goal[0]) +\
+            math.fabs(coord[1] - self.goal[1])
 
     def __already_explored(self, coord):
         return not coord in self.explored
@@ -287,7 +339,6 @@ def bf_search(problem, enhanced=False):
     if problem.is_goal(node):
         return Solution(SolStat.SUCCESS, node)
 
-    level = 0
     frontier = [node]
 
     while frontier:
@@ -430,6 +481,38 @@ def id_search(problem, actions, depth=1, increment=1, enhance=False):
         depth += increment
         problem.reset_explored()
 
+# Recursive best first search
+
+
+def astar_search(problem):
+    """
+    Implementation of the recursive best first search, a heuristic algorithm
+    """
+    problem.heuristic_init()
+
+    if problem.is_goal(problem.initial):
+        return Solution(SolStat.SUCCESS, problem.initial)
+
+    heap = StateHeap()
+    heap.push(problem.initial)
+
+    while True:
+        if heap.empty():
+            return Solution(SolStat.FAILURE)
+
+        node = heap.pop()
+        problem.explored.add(node.coord)
+
+        succesors = problem.get_succesors(node)
+
+        for suc in succesors:
+            # print(node.coord, node.cost,suc.coord, suc.cost)
+            if suc.coord not in problem.explored:
+                if problem.is_goal(suc):
+                    return Solution(SolStat.SUCCESS, suc)
+
+                heap.push(suc)
+
 
 if __name__ == '__main__':
     import maps
@@ -497,6 +580,29 @@ if __name__ == '__main__':
 
         )
 
+    def testas():
+        print('RBFS Test')
+        print('Loading map...', end='')
+        m = maps.Map('../src/maps/mission2')
+        print('done')
+
+        cost = {
+            Terrain.MOUNTAIN: None,
+            Terrain.LAND: 1,
+            Terrain.WATER: 2,
+            Terrain.SAND: 3,
+            Terrain.FOREST: 4
+        }
+
+        print('Loading problem...', end='')
+        start = (0, 10)
+        end = (4, 5)
+        prob = MapProblem(m, start, end, cost)
+        print(' done')
+
+        print('Solving:\nStart', start, '\nEnd', end)
+        return astar_search(prob)
+
     def print_path(node):
         print('Finding path to', node)
 
@@ -510,6 +616,6 @@ if __name__ == '__main__':
         for p in path:
             print(p)
 
-    g = testids()
+    g = testas()
     print('\n\nDONE SEARCH:', g)
     print_path(g.node)

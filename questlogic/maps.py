@@ -62,7 +62,7 @@ class Map:
                     self.matrix[index].append(value)
 
         # If matrix is not rectangular, add the columns to the rows that are short
-        rowsize = lambda l: len(l)
+        def rowsize(l): return len(l)
 
         longest = max(rowsize(i) for i in self.matrix)
 
@@ -98,6 +98,46 @@ class Map:
             walkable.append((coord[0] + 1, coord[1]))
 
         return walkable
+
+    def get_terrains(self, coord):
+        """
+        get_terrains(coord) -> [(coord_1, TERRAIN_TYPE)...]
+        coord       : A bidimensional list or tuple
+        TERRAIN_TYPE: Constant defined in constants.py indicating the type of
+                      terrain.
+
+        Just like the get_walkable method, this method returns a list of
+        surrounding terrains of a coordinate in the map that contain the
+        coordinate and the type of terrain.
+        """
+        succesors = []
+
+        # Up
+        if coord[1] > 0:
+            succesors.append(
+                ((coord[0], coord[1] - 1),
+                 constants.Terrain(self.matrix[coord[1] - 1][coord[0]]))
+            )
+        # Down
+        if coord[1] < len(self.matrix) - 1:
+            succesors.append(
+                ((coord[0], coord[1] + 1),
+                 constants.Terrain(self.matrix[coord[1] + 1][coord[0]]))
+            )
+        # Left
+        if coord[0] > 0:
+            succesors.append(
+                ((coord[0] - 1, coord[1]),
+                 constants.Terrain(self.matrix[coord[1]][coord[0] - 1]))
+            )
+        # Right
+        if coord[0] < len(self.matrix[0]) - 1:
+            succesors.append(
+                ((coord[0] + 1, coord[1]),
+                 constants.Terrain(self.matrix[coord[1]][coord[0] + 1]))
+            )
+
+        return succesors
 
     def is_walkable(self, xy):
         try:
