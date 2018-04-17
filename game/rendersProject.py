@@ -63,37 +63,33 @@ class RendererProject:
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].human.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
-                        '>SET start human: ' + str(tilecoords))
+                        '>SET human: ' + str(tilecoords))
                 elif self.block_start == 2:
                     self.gameobjects[0].monkey= heroes.Monkey('Boots',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].monkey.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
-                        '>SET start monkey: ' + str(tilecoords))
+                        '>SET monkey: ' + str(tilecoords))
                 elif self.block_start == 3:
                     self.gameobjects[0].octopus= heroes.Octopus('Dave',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].octopus.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
-                        '>SET start octopus: ' + str(tilecoords))
+                        '>SET octopus: ' + str(tilecoords))
                 elif self.block_start == 4:
-                    self.gameobjects[0].positionP= tilecoords
+                    self.gameobjects[0].portal_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Portal: ' + str(tilecoords))
                 elif self.block_start == 5:
-                    self.gameobjects[0].positionK= tilecoords
+                    self.gameobjects[0].key_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Key: ' + str(tilecoords))
                 elif self.block_start == 6:
-                    self.gameobjects[0].positionS[self.flagStone]= tilecoords
+                    self.gameobjects[0].stone_pos = tilecoords
                     self.gameobjects[1].insert_log(
-                        '>SET Stone ' + str(self.flagStone) + ': '
-                        + str(tilecoords))
-                    self.flagStone += 1
-                    if self.flagStone > 2:
-                        self.flagStone = 0
+                        '>SET Stones: ' + str(tilecoords))
                 elif self.block_start == 7:
-                    self.gameobjects[0].positionT= tilecoords
+                    self.gameobjects[0].temple_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Temple: ' + str(tilecoords))
                 self.block_start = 0
@@ -125,20 +121,35 @@ class RendererProject:
             elif coords[0] < (48 * 3):
                 self.block_start= 3
             elif coords[0] < (48 * 4):
-                print ("P")
                 self.block_start= 4
             elif coords[0] < (48 * 5):
-                print ("K")
                 self.block_start= 5
             elif coords[0] < (48 * 6):
-                print ("S")
                 self.block_start= 6
             elif coords[0] < (48 * 7):
-                print ("T")
                 self.block_start= 7
+
+            # Start algorithm
             elif coords[0] < (48 * 8):
-                print ("Star")
-                self.block_start= 8
+                goals = {
+                    'key': self.gameobjects[0].key_pos,
+                    'stones': self.gameobjects[0].stone_pos,
+                    'temple': self.gameobjects[0].temple_pos,
+                    'portal': self.gameobjects[0].portal_pos
+                }
+                fellowship = [
+                    self.gameobjects[0].human,
+                    self.gameobjects[0].octopus,
+                    self.gameobjects[0].monkey
+                ]
+                if not goals['key'] or not goals['temple'] or \
+                        not goals['stones'] or not goals['portal']:
+                    self.gameobjects[1].insert_log('>ITEMS missing on map.');
+
+                elif not all(fellowship):
+                    self.gameobjects[1].insert_log('>HEROES missing on map.');
+                else:
+                    heroes.assign_missions(fellowship, goals)
 
     def keypressed(self, event):
         """ Render on key press event. """
@@ -236,10 +247,10 @@ class GameMap(ScreenSection):
         self.blockImg= True
 
         # Item positions
-        self.positionP= None
-        self.positionK= None
-        self.positionS= [None, None, None]
-        self.positionT= None
+        self.portal_pos  = None
+        self.key_pos = None
+        self.stone_pos = None
+        self.temple_pos = None
 
     def render(self):
         """
@@ -257,25 +268,24 @@ class GameMap(ScreenSection):
                 self.screen.blit(self.landtiles[value], (c * 48, r * 48))
 
         # Render Items when they have positions
-        if self.positionP != None:
+        if self.portal_pos:
             self.screen.blit(
-                self.pImg, (self.positionP[0] * 48, self.positionP[1] * 48))
+                self.pImg, (self.portal_pos [0] * 48, self.portal_pos [1] * 48))
 
-        if self.positionK != None:
+        if self.key_pos:
             self.screen.blit(
-                self.kImg, (self.positionK[0] * 48, self.positionK[1] * 48))
+                self.kImg, (self.key_pos [0] * 48, self.key_pos [1] * 48))
 
-        for stone in self.positionS:
-            if stone != None:
-                self.screen.blit(
-                    self.sImg, (stone[0] * 48, stone[1] * 48))
-
-        if self.positionT != None:
+        if self.stone_pos:
             self.screen.blit(
-                self.tImg, (self.positionT[0] * 48, self.positionT[1] * 48))
+                self.sImg, (self.stone_pos[0] * 48, self.stone_pos[1] * 48))
+
+        if self.temple_pos  != None:
+            self.screen.blit(
+                self.tImg, (self.temple_pos [0] * 48, self.temple_pos [1] * 48))
 
         # When they have positions
-        if self.human != None:
+        if self.human:
             # Render human
             self.screen.blit(
                 self.humanImg, (self.human.pos[0] * 48, self.human.pos[1] * 48))

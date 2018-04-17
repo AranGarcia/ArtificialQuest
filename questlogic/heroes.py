@@ -1,9 +1,20 @@
+import math
+
 from constants import MoveDir, Terrain, Algorithm
 import ai
 
 
 class Hero:
-    """docstring for Hero."""
+    """
+    The characters that will be placed on the map. Each Hero can establish a
+    goal and can use its searching abilities to get to that goal. Searching constant
+    be done by BLIND or HEURISTIC searches.
+
+    Hero(name, gmap, pos)
+    name : The name of the hero
+    gmap : Map object representing the world in which the hero is in.
+    pos  : Initial position of the hero.
+    """
 
     def __init__(self, name, gmap, pos):
         self.name = name
@@ -65,10 +76,9 @@ class Hero:
     def start_search(self, algorithm, enhance=False):
         """
         Starts a search algorithm from a start state to a goal state using
-        breadth first, depth first or iterative deepening search.
+        breadth first, depth first or iterative deepening search. The Initial
+        and goal states are defined previously with set_goal and set_start.
 
-        start     : (x,y) coordinates of the start state.
-        goal      : (x,y) coordinates of the goal state.
         algorithm : Symbolic constant in Constants representing the type of
                     algorithm.
         enhance   : If true, redundant nodes will not be generated.
@@ -123,11 +133,18 @@ class Hero:
         else:
             return False
 
+    def start_heuristic_search(self):
+        if not self.__start or not self.__goal:
+            raise ValueError(' start/goal')
+
+        problem = ai.MapProblem(self.gmap, self.__start, self.__goal, self.cost)
+        return ai.astar_search(problem)
+
     def set_start(self, start):
-        self.__start = start
+        self.__start = (start[0], start[1])
 
     def set_goal(self, goal):
-        self.__goal = goal
+        self.__goal = (goal[0], goal[1])
 
     def update_explored(self, explored):
         for exp in explored:
@@ -204,7 +221,7 @@ class Human(Hero):
         super(Human, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: None,
+            Terrain.MOUNTAIN: math.inf,
             Terrain.LAND: 1,
             Terrain.WATER: 2,
             Terrain.SAND: 3,
@@ -228,7 +245,7 @@ class Monkey(Hero):
         super(Monkey, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: None,
+            Terrain.MOUNTAIN: math.inf,
             Terrain.LAND: 2,
             Terrain.WATER: 4,
             Terrain.SAND: 3,
@@ -252,9 +269,74 @@ class Octopus(Hero):
         super(Octopus, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: None,
+            Terrain.MOUNTAIN: math.inf,
             Terrain.LAND: 2,
             Terrain.WATER: 1,
-            Terrain.SAND: None,
+            Terrain.SAND: math.inf,
             Terrain.FOREST: 3
         }
+
+def assign_missions(chrs, gls):
+    print('The portal will open at', gls['portal'])
+
+    print('\nCalculating costs of each mission...\n')
+
+    table_results = []
+    for hero in chrs:
+        c_results = []
+
+        # Calculate Start - Temple
+        hero.set_goal(gls['temple'])
+        solution = hero.start_heuristic_search()
+        node = solution.node
+        c_results.append(node.acc_cost)
+
+        # Start - Temple - portal
+        hero.set_start(gls['temple'])
+        hero.set_goal(gls['portal'])
+        solution = hero.start_heuristic_search()
+        node = solution.node
+        c_results.append(node.acc_cost)
+
+        # Start - Magic Stones
+        hero.set_start(hero.pos)
+        hero.set_goal(gls['stones'])
+        solution = hero.start_heuristic_search()
+        node = solution.node
+        c_results.append(node.acc_cost)
+
+        # Start - Magic Stones - Portal
+        hero.set_start(gls['stones'])
+        hero.set_goal(gls['portal'])
+        solution = hero.start_heuristic_search()
+        node = solution.node
+        c_results.append(node.acc_cost)
+
+        # Start - Key
+        hero.set_start(hero.pos)
+        hero.set_goal(gls['key'])
+        solution = hero.start_heuristic_search()
+        node = solution.node
+        c_results.append(node.acc_cost)
+
+        # Start - Key - Portal
+        hero.set_start(gls['key'])
+        hero.set_goal(gls['portal'])
+        solution = hero.start_heuristic_search()
+        node = solution.node
+        c_results.append(node.acc_cost)
+
+        table_results.append(c_results)
+
+    print('%-10s%-7s%-7s%-7s%-7s%-7s%-7s' %
+        ('HERO', 'I-T', 'I-T-P', 'I-S', 'I-S-P', 'I-K', 'I-K-P')
+    )
+
+    for i, tr in enumerate(table_results):
+        print('%-10s' % chrs[i].name, end='')
+        print('%-7s%-7s%-7s%-7s%-7s%-7s' %
+            (tr[0], tr[1], tr[2], tr[3], tr[4], tr[5]))
+    print()
+
+
+    # print('Assigning missions...')

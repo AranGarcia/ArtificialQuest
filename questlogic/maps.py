@@ -131,7 +131,7 @@ class Map:
                  constants.Terrain(self.matrix[coord[1]][coord[0] - 1]))
             )
         # Right
-        if coord[1] < len(self.matrix[0]) - 1:
+        if coord[0] < len(self.matrix[0]) - 1:
             succesors.append(
                 ((coord[0] + 1, coord[1]),
                  constants.Terrain(self.matrix[coord[1]][coord[0] + 1]))

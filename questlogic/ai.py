@@ -263,7 +263,7 @@ class MapProblem:
             HNode(
                 s[0], self.costs[s[1]], node,
                 self.__get_direction(node.coord, s[0]),
-                node.cost + self.costs[s[1]],
+                node.acc_cost + self.costs[s[1]],
                 self.__manhattan(s[0])
             ) for s in self.gmap.get_terrains(node.coord)
         ]
@@ -274,7 +274,6 @@ class MapProblem:
         of establishing the manhattan distance form the start to the goal.
         """
 
-        print(self.initial.coord, self.goal)
         self.initial = HNode(
             self.initial.coord, 0,
             dist=self.__manhattan(self.initial.coord)
@@ -340,7 +339,6 @@ def bf_search(problem, enhanced=False):
     if problem.is_goal(node):
         return Solution(SolStat.SUCCESS, node)
 
-    level = 0
     frontier = [node]
 
     while frontier:
@@ -500,22 +498,20 @@ def astar_search(problem):
 
     while True:
         if heap.empty():
-            print('FAILED')
             return Solution(SolStat.FAILURE)
 
         node = heap.pop()
-        print('GOING FOR', node, end='\t')
+        problem.explored.add(node.coord)
+
         succesors = problem.get_succesors(node)
-        for s in succesors:
-            print(s.coord, end='  ')
-        print()
 
         for suc in succesors:
-            if problem.is_goal(suc):
-                print('\nGOAL\n')
-                return Solution(SolStat.SUCCESS, suc)
+            # print(node.coord, node.cost,suc.coord, suc.cost)
+            if suc.coord not in problem.explored:
+                if problem.is_goal(suc):
+                    return Solution(SolStat.SUCCESS, suc)
 
-            heap.push(suc)
+                heap.push(suc)
 
 
 if __name__ == '__main__':
