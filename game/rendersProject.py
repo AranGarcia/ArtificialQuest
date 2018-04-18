@@ -128,6 +128,15 @@ class RendererProject:
                 self.block_start= 6
             elif coords[0] < (48 * 7):
                 self.block_start= 7
+            elif coords[0] < (48 * 9):
+                self.block_start= 9
+                self.gameobjects = [
+                    GameMap(self.screen, (0, 0), self.gamemap),
+                    LogSection(self.screen, self.height - 48,
+                        (self.width - 300, 0)),
+                    BarButton(self.screen, self.width,
+                        (0, len(self.gamemap.matrix) * 48))
+                ]
 
             # Start algorithm
             elif coords[0] < (48 * 8):
