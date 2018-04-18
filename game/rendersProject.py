@@ -62,35 +62,20 @@ class RendererProject:
                     self.gameobjects[0].human= heroes.Human('Isildur',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].human.set_start(tilecoords)
-<<<<<<< HEAD
-                    self.gameobjects[1].insert_log('>SET start human:')
-                    self.gameobjects[1].insert_log(str(tilecoords))
-=======
                     self.gameobjects[1].insert_log(
                         '>SET human: ' + str(tilecoords))
->>>>>>> 1ad5abde04914edd5e5fd5d002f48ab72018d687
                 elif self.block_start == 2:
                     self.gameobjects[0].monkey= heroes.Monkey('Boots',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].monkey.set_start(tilecoords)
-<<<<<<< HEAD
-                    self.gameobjects[1].insert_log('>SET start monkey:')
-                    self.gameobjects[1].insert_log(str(tilecoords))
-=======
                     self.gameobjects[1].insert_log(
                         '>SET monkey: ' + str(tilecoords))
->>>>>>> 1ad5abde04914edd5e5fd5d002f48ab72018d687
                 elif self.block_start == 3:
                     self.gameobjects[0].octopus= heroes.Octopus('Dave',
                         self.gamemap, list(tilecoords))
                     self.gameobjects[0].octopus.set_start(tilecoords)
-<<<<<<< HEAD
-                    self.gameobjects[1].insert_log('>SET start octopus:')
-                    self.gameobjects[1].insert_log(str(tilecoords))
-=======
                     self.gameobjects[1].insert_log(
                         '>SET octopus: ' + str(tilecoords))
->>>>>>> 1ad5abde04914edd5e5fd5d002f48ab72018d687
                 elif self.block_start == 4:
                     self.gameobjects[0].portal_pos = tilecoords
                     self.gameobjects[1].insert_log(
@@ -146,18 +131,6 @@ class RendererProject:
 
             # Start algorithm
             elif coords[0] < (48 * 8):
-<<<<<<< HEAD
-                self.block_start= 8
-            elif coords[0] < (48 * 9):
-                self.block_start= 9
-                self.gameobjects = [
-                    GameMap(self.screen, (0, 0), self.gamemap),
-                    LogSection(self.screen, self.height - 48,
-                        (self.width - 300, 0)),
-                    BarButton(self.screen, self.width,
-                        (0, len(self.gamemap.matrix) * 48))
-                ]
-=======
                 goals = {
                     'key': self.gameobjects[0].key_pos,
                     'stones': self.gameobjects[0].stone_pos,
@@ -177,7 +150,6 @@ class RendererProject:
                     self.gameobjects[1].insert_log('>HEROES missing on map.');
                 else:
                     heroes.assign_missions(fellowship, goals)
->>>>>>> 1ad5abde04914edd5e5fd5d002f48ab72018d687
 
     def keypressed(self, event):
         """ Render on key press event. """
