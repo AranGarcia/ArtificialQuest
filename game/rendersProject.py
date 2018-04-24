@@ -2,7 +2,7 @@
 Rendering module of the game. The main class Renderer handles various parts of
 the screen and receives the events for them.
 """
-import pygame
+import pygame, time
 from questlogic import constants as const, heroes
 from pygame.locals import *
 
@@ -149,9 +149,23 @@ class RendererProject:
                 elif not all(fellowship):
                     self.gameobjects[1].insert_log('>HEROES missing on map.');
                 else:
-                    heroes.assign_missions(fellowship, goals)
+                    # heroes.assign_missions(fellowship, goals)
+                    self.gameobjects[0].moveHuman= \
+                    self.gameobjects[0].moveMonkey= \
+                    self.gameobjects[0].moveOctapus= \
+                        [(0,12), (1,12), (2,12), (3,12), (4,12), (5,12), (6,12), (7,12),
+                        (7,11), (7,10), (7,9), (7,8), (7,7), (7,6), (7,5),
+                        (4,5), (3,5), (2,5), (1,5), (0,5),
+                        (0,6), (0,7), (0,8), (0,9), (0,10), (0,11),
+                        (1,11), (2,11), (3,11), (4,11), (5,11), (6,11),
+                        (6,10), (6,9), (6,8), (6,7), (6,6),
+                        (5,6), (4,6), (3,6), (2,6), (1,6),
+                        (1,7), (1,8), (1,9), (1,10),
+                        (2,10), (3,10), (4,10), (5,10),
+                        (5,9), (5,8), (5,7)]
+
+            # Game reset
             elif coords[0] < (48 * 9):
-                self.block_start= 9
                 self.gameobjects = [
                     GameMap(self.screen, (0, 0), self.gamemap),
                     LogSection(self.screen, self.height - 48,
@@ -261,6 +275,10 @@ class GameMap(ScreenSection):
         self.stone_pos = None
         self.temple_pos = None
 
+        self.moveHuman= []
+        self.moveMonkey= []
+        self.moveOctapus= []
+
     def render(self):
         """
         Implemented method of a ScreenSection that renders the map tiles,
@@ -289,37 +307,63 @@ class GameMap(ScreenSection):
             self.screen.blit(
                 self.sImg, (self.stone_pos[0] * 48, self.stone_pos[1] * 48))
 
-        if self.temple_pos  != None:
+        if self.temple_pos:
             self.screen.blit(
                 self.tImg, (self.temple_pos [0] * 48, self.temple_pos [1] * 48))
 
-        # When they have positions
-        if self.human:
-            # Render human
-            self.screen.blit(
-                self.humanImg, (self.human.pos[0] * 48, self.human.pos[1] * 48))
+        # When the characters have positions
 
-            # Draw indicator where decisions where made
-            for dcs in self.human.decisions:
-                self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
-        if self.monkey != None:
-            # Render monkey
+        if self.moveHuman:
+            self.human.pos= self.moveHuman.pop(0)
             self.screen.blit(
-                self.monkeyImg,
-                (self.monkey.pos[0] * 48, self.monkey.pos[1] * 48))
+            self.humanImg, (self.human.pos[0] * 48,
+            self.human.pos[1] * 48))
 
-            # Draw indicator where decisions where made
-            for dcs in self.monkey.decisions:
-                self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
-        if self.octopus != None:
-            # Render octopus
+        if self.moveMonkey:
+            self.monkey.pos= self.moveMonkey.pop(0)
             self.screen.blit(
-                self.octopusImg,
-                (self.octopus.pos[0] * 48, self.octopus.pos[1] * 48))
+            self.monkeyImg, (self.monkey.pos[0] * 48,
+            self.monkey.pos[1] * 48))
 
-            # Draw indicator where decisions where made
-            for dcs in self.octopus.decisions:
-                self.screen.blit(self.decisionimg, (dcs[0] * 48, dcs[1] * 48))
+        if self.moveOctapus:
+            self.octopus.pos= self.moveOctapus.pop(0)
+            self.screen.blit(
+            self.octopusImg, (self.octopus.pos[0] * 48,
+            self.octopus.pos[1] * 48))
+
+            time.sleep(.15)
+        else:
+            if self.human:
+                # Render human
+                self.screen.blit(
+                    self.humanImg, (self.human.pos[0] * 48,
+                    self.human.pos[1] * 48))
+
+                # Draw indicator where decisions where made
+                for dcs in self.human.decisions:
+                    self.screen.blit(self.decisionimg,
+                    (dcs[0] * 48, dcs[1] * 48))
+            if self.monkey:
+                # Render monkey
+                self.screen.blit(
+                    self.monkeyImg,
+                    (self.monkey.pos[0] * 48, self.monkey.pos[1] * 48))
+
+                # Draw indicator where decisions where made
+                for dcs in self.monkey.decisions:
+                    self.screen.blit(self.decisionimg,
+                    (dcs[0] * 48, dcs[1] * 48))
+            if self.octopus:
+                # Render octopus
+                self.screen.blit(
+                    self.octopusImg,
+                    (self.octopus.pos[0] * 48, self.octopus.pos[1] * 48))
+
+                # Draw indicator where decisions where made
+                for dcs in self.octopus.decisions:
+                    self.screen.blit(self.decisionimg,
+                    (dcs[0] * 48, dcs[1] * 48))
+
 
         # If seleciton active, render cursor
         if self.selectedtile:
