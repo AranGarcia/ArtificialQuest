@@ -137,7 +137,8 @@ class Hero:
         if not self.__start or not self.__goal:
             raise ValueError(' start/goal')
 
-        problem = ai.MapProblem(self.gmap, self.__start, self.__goal, self.cost)
+        problem = ai.MapProblem(self.gmap, self.__start,
+                                self.__goal, self.cost)
         return ai.astar_search(problem)
 
     def set_start(self, start):
@@ -211,10 +212,10 @@ class Human(Hero):
 
     It's movement costs are:
     MOUNTAIN: N/A
-    LAND: 2
-    WATER: 4
+    LAND: 1
+    WATER: 2
     SAND: 3
-    FOREST: 1
+    FOREST: 4
     """
 
     def __init__(self, name, gmap, pos):
@@ -276,67 +277,83 @@ class Octopus(Hero):
             Terrain.FOREST: 3
         }
 
+
 def assign_missions(chrs, gls):
-    print('The portal will open at', gls['portal'])
-
+    print('SETTING', gls)
     print('\nCalculating costs of each mission...\n')
+    print('The portal will open at', gls['portal'])
+    print('The temple is at', gls['temple'])
+    print('The stones are at', gls['stones'])
+    print('The key is at' + str(gls['key']) + '\n')
 
-    table_results = []
+    results = []
     for hero in chrs:
+        hero.set_start(hero.pos)
         c_results = []
 
         # Calculate Start - Temple
         hero.set_goal(gls['temple'])
         solution = hero.start_heuristic_search()
         node = solution.node
-        c_results.append(node.acc_cost)
+        c_results.append(node)
 
         # Start - Temple - portal
         hero.set_start(gls['temple'])
         hero.set_goal(gls['portal'])
         solution = hero.start_heuristic_search()
         node = solution.node
-        c_results.append(node.acc_cost)
+        c_results.append(node)
 
         # Start - Magic Stones
         hero.set_start(hero.pos)
         hero.set_goal(gls['stones'])
         solution = hero.start_heuristic_search()
         node = solution.node
-        c_results.append(node.acc_cost)
+        c_results.append(node)
 
         # Start - Magic Stones - Portal
         hero.set_start(gls['stones'])
         hero.set_goal(gls['portal'])
         solution = hero.start_heuristic_search()
         node = solution.node
-        c_results.append(node.acc_cost)
+        c_results.append(node)
 
         # Start - Key
         hero.set_start(hero.pos)
         hero.set_goal(gls['key'])
         solution = hero.start_heuristic_search()
         node = solution.node
-        c_results.append(node.acc_cost)
+        c_results.append(node)
 
         # Start - Key - Portal
         hero.set_start(gls['key'])
         hero.set_goal(gls['portal'])
         solution = hero.start_heuristic_search()
         node = solution.node
-        c_results.append(node.acc_cost)
+        c_results.append(node)
 
-        table_results.append(c_results)
+        results.append(c_results)
 
-    print('%-10s%-7s%-7s%-7s%-7s%-7s%-7s' %
-        ('HERO', 'I-T', 'I-T-P', 'I-S', 'I-S-P', 'I-K', 'I-K-P')
-    )
+    # Print results
+    print('%-10s|%-7s|%-7s|%-7s|%-7s|%-7s|%-7s' %
+          ('HERO', 'I-T', 'I-T-P', 'I-S', 'I-S-P', 'I-K', 'I-K-P'),
+          '-' * 57, sep='\n'
+          )
 
-    for i, tr in enumerate(table_results):
-        print('%-10s' % chrs[i].name, end='')
-        print('%-7s%-7s%-7s%-7s%-7s%-7s' %
-            (tr[0], tr[1], tr[2], tr[3], tr[4], tr[5]))
+    costs = []
+    for i, tr in enumerate(results):
+        print('%-10s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s' %
+              (chrs[i].name,
+               tr[0].acc_cost, tr[1].acc_cost + tr[0].acc_cost,
+               tr[2].acc_cost, tr[3].acc_cost + tr[2].acc_cost,
+               tr[4].acc_cost, tr[5].acc_cost + tr[4].acc_cost)
+              )
+        costs.append([
+            (0, tr[1].acc_cost + tr[0].acc_cost),
+            (1, tr[3].acc_cost + tr[2].acc_cost),
+            (2, tr[5].acc_cost + tr[4].acc_cost)
+        ])
     print()
 
-
-    # print('Assigning missions...')
+    assignments = ai.schedule(costs)
+    print(assignments)
