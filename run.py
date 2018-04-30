@@ -7,13 +7,13 @@ import sys
 from game import artificialquest as aqgame
 
 if len(sys.argv) < 2:
-    print ("\n\tIntroduce practice2 or project.\n")
+    print("\nUsage\n\trun.py [dungeon|world]")
 else:
-    if sys.argv[1] == "practice2":
+    if sys.argv[1] == "dungeon":
         game = aqgame.Game(False)
         game.run(False)
-    elif sys.argv[1] == "project":
+    elif sys.argv[1] == "world":
         game = aqgame.Game(True)
         game.run(True)
     else:
-        print ("This option is not valid.")
+        print("\nUsage\n\trun.py [dungeon|world]")

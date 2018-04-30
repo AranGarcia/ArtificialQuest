@@ -6,6 +6,7 @@ import pygame
 from questlogic import maps
 from . import renders, rendersProject
 
+
 class Game(object):
     """
     Main class of the simulation. It includes the logic part of the project,
@@ -14,7 +15,8 @@ class Game(object):
     """
 
     def __init__(self, typeGame):
-        self.gamemap = maps.Map('src/maps/mission1' if typeGame else 'src/maps/dungeon')
+        self.gamemap = maps.Map(
+            'src/maps/mission1' if typeGame else 'src/maps/dungeon')
         self.width = len(self.gamemap.matrix[0]) * 48 + 300
         self.height = len(self.gamemap.matrix) * 48 + 48
 

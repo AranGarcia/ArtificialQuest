@@ -279,7 +279,17 @@ class Octopus(Hero):
 
 
 def assign_missions(chrs, gls):
-    print('SETTING', gls)
+    """
+    Given a list of Heroes and a list of tuples that represent a goal, this
+    method will return a list of for each Hero in the order that they were
+    declared.
+
+    Each list for every hero contains tuples that represent the coordinate of
+    their path to a mission. The assignment calcualtes the best possible outcome
+    for the whole team of heroes (the total cost of the missions is the lowest
+    possible).
+    """
+
     print('\nCalculating costs of each mission...\n')
     print('The portal will open at', gls['portal'])
     print('The temple is at', gls['temple'])
@@ -356,4 +366,43 @@ def assign_missions(chrs, gls):
     print()
 
     assignments = ai.schedule(costs)
-    print(assignments)
+    assignment_names = ['Temple', 'Stones', 'Key']
+
+    print('\nMission assignment:')
+    for i,c in enumerate(chrs):
+        print('%-10s:%s' % (c.name, assignment_names[assignments[i]]))
+
+    return __build_paths(
+        (results[0][assignments[0] * 2], results[0][assignments[0] * 2 + 1]),
+        (results[1][assignments[1] * 2], results[1][assignments[1] * 2 + 1]),
+        (results[2][assignments[2] * 2], results[2][assignments[2] * 2 + 1]),
+    )
+
+def __build_paths(*missions):
+    paths = []
+
+    for m in missions:
+        paths.append(__build_path(m))
+
+    return paths
+
+def __build_path(s_i_p):
+    """ Builds path from start point, to item and then to portal. """
+    path = []
+
+    # Builds the path in reverse.
+    # From portal to item
+    aux = s_i_p[1]
+    while aux:
+        path.insert(0, aux.coord)
+        aux = aux.parent
+
+    # From item to start point
+    aux = s_i_p[0]
+    while aux:
+        path.insert(0, aux.coord)
+        aux = aux.parent
+
+    # print('Path made:', path)
+
+    return path

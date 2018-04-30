@@ -166,7 +166,8 @@ class ANode:
             self.level = 0
 
     def __str__(self):
-        return 'ANode<M:%d, C:%s>' % (self.mission, str(self.f))
+        return 'ANode<L:%d, M:%d, C:%s>' %\
+            (self.level, self.mission, str(self.f))
 
     def __eq__(self, other):
         return self.f == other.f
@@ -380,7 +381,7 @@ class ScheduleProblem:
     def get_children(self, node):
         children = []
 
-        if node.level < len(self.matrix):
+        if node.level < len(self.matrix) - 1:
             for m in self.matrix[node.level + 1]:
                 if not m[0] in node.assigned:
                     children.append(ANode(m[0], m[1] + node.f, node))
@@ -567,7 +568,6 @@ def id_search(problem, actions, depth=1, increment=1, enhance=False):
 
 
 def schedule(matrix):
-
     sp = ScheduleProblem(matrix)
 
     frontier = StateHeap(sp.start)
@@ -576,12 +576,11 @@ def schedule(matrix):
         node = frontier.pop()
 
         children = sp.get_children(node)
+        if not children:
+            print('Cost of best possible solution:', node.f)
+            return ScheduleProblem.order_missions(node)
         for c in children:
-            if c.level == 2:
-                print('FOUND SOLUTON')
-                return ScheduleProblem.order_missions(c)
-            else:
-                frontier.push(c)
+            frontier.push(c)
 
 
 #
