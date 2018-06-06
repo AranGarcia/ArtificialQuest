@@ -1,7 +1,7 @@
 import math
 
-from constants import MoveDir, Terrain, Algorithm
-import ai
+from ai import search
+from constants import Algorithm, MoveDir, Terrain
 
 
 class Hero:
@@ -20,6 +20,7 @@ class Hero:
         self.name = name
         self.gmap = gmap
         self.pos = pos
+        self.cost = {}
         self.__start = None
         self.__goal = None
         self.decisions = set([])
@@ -92,11 +93,11 @@ class Hero:
         if not self.__start or not self.__goal:
             raise ValueError(' start/goal')
 
-        problem = ai.MapProblem(self.gmap, self.__start, self.__goal)
+        problem = search.MapProblem(self.gmap, self.__start, self.__goal)
 
         # TODO: Find out why comparison between same Enums returns False
         if algorithm.value == Algorithm.BFS.value:
-            solution = ai.bf_search(problem, enhance)
+            solution = search.bf_search(problem, enhance)
 
         # At this point, ony depth searches remain.
         # The hero must define the order of its actions, so if they are not
@@ -106,10 +107,10 @@ class Hero:
                 raise ValueError(' actions.')
 
             elif algorithm.value == Algorithm.DFS.value:
-                solution = ai.df_search(problem, self.actions, enhance)
+                solution = search.df_search(problem, self.actions, enhance)
 
             elif algorithm.value == Algorithm.IDS.value:
-                solution = ai.id_search(problem, self.actions, 1, 1, enhance)
+                solution = search.id_search(problem, self.actions, 1, 1, enhance)
 
         # This helps the renderer restart the map
         self.pos = self.__start
@@ -117,7 +118,7 @@ class Hero:
         self.decisions.clear()
         self.update_explored(problem.explored)
 
-        if solution.status == ai.SolStat.SUCCESS:
+        if solution.status == search.SolStat.SUCCESS:
             self.pos = [solution.node.coord[0], solution.node.coord[1]]
             path = Hero.__get_path(solution.node)
 
@@ -137,9 +138,9 @@ class Hero:
         if not self.__start or not self.__goal:
             raise ValueError(' start/goal')
 
-        problem = ai.MapProblem(self.gmap, self.__start,
+        problem = search.MapProblem(self.gmap, self.__start,
                                 self.__goal, self.cost)
-        return ai.astar_search(problem)
+        return search.astar_search(problem)
 
     def set_start(self, start):
         self.__start = (start[0], start[1])
@@ -346,18 +347,18 @@ def assign_missions(chrs, gls):
 
     # Print results
     print('%-10s|%-7s|%-7s|%-7s|%-7s|%-7s|%-7s' %
-          ('HERO', 'I-T', 'I-T-P', 'I-S', 'I-S-P', 'I-K', 'I-K-P'),
+        ('HERO', 'I-T', 'I-T-P', 'I-S', 'I-S-P', 'I-K', 'I-K-P'),
           '-' * 57, sep='\n'
-          )
+        )
 
     costs = []
     for i, tr in enumerate(results):
         print('%-10s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s' %
-              (chrs[i].name,
-               tr[0].acc_cost, tr[1].acc_cost + tr[0].acc_cost,
-               tr[2].acc_cost, tr[3].acc_cost + tr[2].acc_cost,
-               tr[4].acc_cost, tr[5].acc_cost + tr[4].acc_cost)
-              )
+            (chrs[i].name,
+            tr[0].acc_cost, tr[1].acc_cost + tr[0].acc_cost,
+            tr[2].acc_cost, tr[3].acc_cost + tr[2].acc_cost,
+            tr[4].acc_cost, tr[5].acc_cost + tr[4].acc_cost)
+            )
         costs.append([
             (0, tr[1].acc_cost + tr[0].acc_cost),
             (1, tr[3].acc_cost + tr[2].acc_cost),
@@ -365,7 +366,7 @@ def assign_missions(chrs, gls):
         ])
     print()
 
-    assignments = ai.schedule(costs)
+    assignments = search.schedule(costs)
     assignment_names = ['Temple', 'Stones', 'Key']
 
     print('\nMission assignment:')

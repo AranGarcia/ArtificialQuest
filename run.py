@@ -9,11 +9,18 @@ from game import artificialquest as aqgame
 if len(sys.argv) < 2:
     print("\nUsage\n\trun.py [dungeon|world]")
 else:
-    if sys.argv[1] == "dungeon":
-        game = aqgame.Game(False)
-        game.run(False)
-    elif sys.argv[1] == "world":
-        game = aqgame.Game(True)
-        game.run(True)
+    argument = sys.argv[1].lower()
+
+    if argument == "dungeon":
+        gtype = aqgame.GameType.DUNGEON
+    elif argument == "world1":
+        gtype = aqgame.GameType.WORLD1
+    elif argument == "world2":
+        gtype = aqgame.GameType.WORLD2
     else:
-        print("\nUsage\n\trun.py [dungeon|world]")
+        print("\nUsage\n\trun.py [dungeon|world1|world2]")
+        exit()
+
+    game = aqgame.Game(gtype)
+    game.run()
+    

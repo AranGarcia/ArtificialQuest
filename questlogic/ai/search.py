@@ -16,12 +16,14 @@ to reach.
 Each search algorithm returns a Solution object that can represent a FAILURE or
 a SUCCESS.
 """
-
 import math
 
 from enum import Enum
 from heapq import heapify, heappush, heappop
-from constants import MoveDir, Terrain
+import constants
+
+MoveDir = constants.MoveDir
+Terrain = constants.Terrain
 
 #####################################
 # Data structures used in searching #

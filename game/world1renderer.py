@@ -14,7 +14,7 @@ KPEVENTS = set(['0', '1', '2', '3', '4', '5', '6'])
 ARROWEVENTS = set([273, 274, 275, 276])
 
 
-class RendererProject:
+class World1Renderer:
     """ Manager of the objects to be rendered in the game. """
 
     def __init__(self, gamedisplay, gamemap, width, height):
@@ -60,20 +60,20 @@ class RendererProject:
 
             if self.block_start != 0:
                 if self.block_start == 1:
-                    self.gameobjects[0].human = heroes.Human('Isildur',
-                                                             self.gamemap, list(tilecoords))
+                    self.gameobjects[0].human = heroes.Human(
+                        'Isildur', self.gamemap, list(tilecoords))
                     self.gameobjects[0].human.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>SET human: ' + str(tilecoords))
                 elif self.block_start == 2:
-                    self.gameobjects[0].monkey = heroes.Monkey('Boots',
-                                                               self.gamemap, list(tilecoords))
+                    self.gameobjects[0].monkey = heroes.Monkey(
+                        'Boots', self.gamemap, list(tilecoords))
                     self.gameobjects[0].monkey.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>SET monkey: ' + str(tilecoords))
                 elif self.block_start == 3:
-                    self.gameobjects[0].octopus = heroes.Octopus('Dave',
-                                                                 self.gamemap, list(tilecoords))
+                    self.gameobjects[0].octopus = heroes.Octopus(
+                        'Dave', self.gamemap, list(tilecoords))
                     self.gameobjects[0].octopus.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>SET octopus: ' + str(tilecoords))
@@ -159,8 +159,8 @@ class RendererProject:
             elif coords[0] < (48 * 9):
                 self.gameobjects = [
                     GameMap(self.screen, (0, 0), self.gamemap),
-                    LogSection(self.screen, self.height - 48,
-                               (self.width - 300, 0)),
+                    LogSection(self.screen, self.height -
+                               48, (self.width - 300, 0)),
                     BarButton(self.screen, self.width,
                               (0, len(self.gamemap.matrix) * 48))
                 ]
