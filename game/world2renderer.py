@@ -90,7 +90,7 @@ class World2Renderer:
                     self.gameobjects[1].insert_log(
                         '>SET sasquatch: ' + str(tilecoords))
                 elif self.block_start == 6:
-                    self.gameobjects[0].sasquatch = heroes.Werewolf(
+                    self.gameobjects[0].werewolf = heroes.Werewolf(
                         'Wolf', self.gamemap, list(tilecoords))
                     self.gameobjects[0].werewolf.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
@@ -132,7 +132,7 @@ class World2Renderer:
         elif coords[1] > (self.height - 48):
             self.gameobjects[0].selectedtile = None
 
-            # Start algorithm using enhanced mode
+            # Hero selection
             if coords[0] < (48):
                 self.block_start = 1
             elif coords[0] < (48 * 2):
@@ -233,6 +233,7 @@ class ScreenSection:
 
 
 class GameMap(ScreenSection):
+
     """
     Rendering object for the GameMap class. It will draw a tile according to the
     type of terrain in the data matrix.
@@ -276,7 +277,7 @@ class GameMap(ScreenSection):
         self.monkeyImg = pygame.image.load('src/img/monkey.png')
         self.octopusImg = pygame.image.load('src/img/octopus.png')
         self.crocodileImg = pygame.image.load('src/img/crocodile.png')
-        self.yetiImg = pygame.image.load("src/img/sasquatch.png")
+        self.sasquatchImg = pygame.image.load("src/img/sasquatch.png")
         self.wolfImg = pygame.image.load("src/img/werewolf.png")
 
         # Other buttons
@@ -294,10 +295,6 @@ class GameMap(ScreenSection):
         self.key_pos = None
         self.stone_pos = None
         self.temple_pos = None
-
-        self.moveHuman = []
-        self.moveMonkey = []
-        self.moveOctapus = []
 
     def render(self):
         """
@@ -331,58 +328,38 @@ class GameMap(ScreenSection):
             self.screen.blit(
                 self.tImg, (self.temple_pos[0] * 48, self.temple_pos[1] * 48))
 
-        # When the characters have positions
-        if self.moveHuman:
-            self.human.pos = self.moveHuman.pop(0)
+
+        if self.human:
             self.screen.blit(
                 self.humanImg, (self.human.pos[0] * 48,
                                 self.human.pos[1] * 48))
 
-        if self.moveMonkey:
-            self.monkey.pos = self.moveMonkey.pop(0)
+        if self.monkey:
+            # Render monkey
             self.screen.blit(
-                self.monkeyImg, (self.monkey.pos[0] * 48,
-                                 self.monkey.pos[1] * 48))
+                self.monkeyImg,
+                (self.monkey.pos[0] * 48, self.monkey.pos[1] * 48))
 
-        if self.moveOctapus:
-            self.octopus.pos = self.moveOctapus.pop(0)
+        if self.octopus:
             self.screen.blit(
-                self.octopusImg, (self.octopus.pos[0] * 48,
-                                  self.octopus.pos[1] * 48))
+                self.octopusImg,
+                (self.octopus.pos[0] * 48, self.octopus.pos[1] * 48))
 
-            time.sleep(.25)
+        if self.crocodile:
+            self.screen.blit(
+                self.crocodileImg,
+                (self.crocodile.pos[0] * 48, self.crocodile.pos[1] * 48))
+        
+        if self.sasquatch:
+            self.screen.blit(
+                self.sasquatchImg,
+                (self.sasquatch.pos[0] * 48, self.sasquatch.pos[1] * 48))
+        
+        if self.werewolf:
+            self.screen.blit(
+                self.wolfImg,
+                (self.werewolf.pos[0] * 48, self.werewolf.pos[1] * 48))
 
-        else:
-            if self.human:
-                # Render human
-                self.screen.blit(
-                    self.humanImg, (self.human.pos[0] * 48,
-                                    self.human.pos[1] * 48))
-
-                # Draw indicator where decisions where made
-                for dcs in self.human.decisions:
-                    self.screen.blit(self.decisionimg,
-                                     (dcs[0] * 48, dcs[1] * 48))
-            if self.monkey:
-                # Render monkey
-                self.screen.blit(
-                    self.monkeyImg,
-                    (self.monkey.pos[0] * 48, self.monkey.pos[1] * 48))
-
-                # Draw indicator where decisions where made
-                for dcs in self.monkey.decisions:
-                    self.screen.blit(self.decisionimg,
-                                     (dcs[0] * 48, dcs[1] * 48))
-            if self.octopus:
-                # Render octopus
-                self.screen.blit(
-                    self.octopusImg,
-                    (self.octopus.pos[0] * 48, self.octopus.pos[1] * 48))
-
-                # Draw indicator where decisions where made
-                for dcs in self.octopus.decisions:
-                    self.screen.blit(self.decisionimg,
-                                     (dcs[0] * 48, dcs[1] * 48))
 
         # If seleciton active, render cursor
         if self.selectedtile:
