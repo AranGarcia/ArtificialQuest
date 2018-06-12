@@ -121,7 +121,8 @@ class World2Renderer:
                     terraintype = self.gameobjects[0].getterrain(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>INFO: ' +
-                        const.TERRAIN_NAMES[terraintype] + ' ' + str(tilecoords)
+                        const.TERRAIN_NAMES[terraintype] +
+                        ' ' + str(tilecoords)
                     )
                 else:
                     # Deactivates cursor if clicked on same selected tile
@@ -179,7 +180,7 @@ class World2Renderer:
                     LogSection(self.screen, self.height -
                                48, (self.width - 300, 0)),
                     ButtonSection(self.screen, self.width,
-                              (0, len(self.gamemap.matrix) * 48))
+                                  (0, len(self.gamemap.matrix) * 48))
                 ]
 
     def keypressed(self, event):

@@ -218,6 +218,8 @@ class Human(Hero):
     WATER: 2
     SAND: 3
     FOREST: 4
+    SWAMP : 5
+    SNOW : 5
     """
 
     def __init__(self, name, gmap, pos):
@@ -228,7 +230,9 @@ class Human(Hero):
             Terrain.LAND: 1,
             Terrain.WATER: 2,
             Terrain.SAND: 3,
-            Terrain.FOREST: 4
+            Terrain.FOREST: 4,
+            Terrain.SWAMP : 5,
+            Terrain.SNOW : 5,
         }
 
 
@@ -242,6 +246,8 @@ class Monkey(Hero):
     WATER: 4
     SAND: 3
     FOREST: 1
+    SWAMP: 5
+    SNOW: N/A
     """
 
     def __init__(self, name, gmap, pos):
@@ -252,7 +258,9 @@ class Monkey(Hero):
             Terrain.LAND: 2,
             Terrain.WATER: 4,
             Terrain.SAND: 3,
-            Terrain.FOREST: 1
+            Terrain.FOREST: 1,
+            Terrain.SWAMP: 5,
+            Terrain.SNOW: math.inf
         }
 
 
@@ -263,9 +271,11 @@ class Octopus(Hero):
     It's movement costs are:
     MOUNTAIN: N/A
     LAND: 2
-    WATER: 4
-    SAND: 3
-    FOREST: 1
+    WATER: 1
+    SAND: N/A
+    FOREST: 3
+    SWAMP: 2
+    SNOW: N/A
     """
 
     def __init__(self, name, gmap, pos):
@@ -276,7 +286,56 @@ class Octopus(Hero):
             Terrain.LAND: 2,
             Terrain.WATER: 1,
             Terrain.SAND: math.inf,
-            Terrain.FOREST: 3
+            Terrain.FOREST: 3,
+            Terrain.SWAMP: 2,
+            Terrain.SNOW: math.inf
+        }
+
+
+class Crocodile(Hero):
+    def __init__(self, name, gmap, pos):
+        super(Crocodile, self).__init__(name, gmap, pos)
+
+        self.cost = {
+            Terrain.MOUNTAIN: math.inf,
+            Terrain.LAND: 2,
+            Terrain.WATER: 1,
+            Terrain.SAND: math.inf,
+            Terrain.FOREST: 3,
+            Terrain.SWAMP: 2,
+            Terrain.SNOW: math.inf
+        }
+
+
+class Sasquatch(Hero):
+    
+    def __init__(self, name, gmap, pos):
+        super(Sasquatch, self).__init__(name, gmap, pos)
+
+        self.cost = {
+            Terrain.MOUNTAIN: 15,
+            Terrain.LAND: 4,
+            Terrain.WATER: math.inf,
+            Terrain.SAND: math.inf,
+            Terrain.FOREST: 4,
+            Terrain.SWAMP: 5,
+            Terrain.SNOW: 3
+        }
+
+
+class Werewolf(Hero):
+    
+    def __init__(self, name, gmap, pos):
+        super(Werewolf, self).__init__(name, gmap, pos)
+
+        self.cost = {
+            Terrain.MOUNTAIN: math.inf,
+            Terrain.LAND: 1,
+            Terrain.WATER: 3,
+            Terrain.SAND: 4,
+            Terrain.FOREST: 2,
+            Terrain.SWAMP: math.inf,
+            Terrain.SNOW: 3
         }
 
 
