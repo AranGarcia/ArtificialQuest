@@ -27,7 +27,7 @@ class World2Renderer:
         self.gameobjects = [
             GameMap(self.screen, (0, 0), self.gamemap),
             LogSection(self.screen, height - 48, (width - 300, 0)),
-            BarButton(self.screen, width, (0, len(gamemap.matrix) * 48))
+            ButtonSection(self.screen, width, (0, len(gamemap.matrix) * 48))
         ]
 
         # Attributes for blocking clicks and keyboard events
@@ -78,18 +78,36 @@ class World2Renderer:
                     self.gameobjects[1].insert_log(
                         '>SET octopus: ' + str(tilecoords))
                 elif self.block_start == 4:
+                    self.gameobjects[0].crocodile = heroes.Crocodile(
+                        'Croc', self.gamemap, list(tilecoords))
+                    self.gameobjects[0].crocodile.set_start(tilecoords)
+                    self.gameobjects[1].insert_log(
+                        '>SET crocodile: ' + str(tilecoords))
+                elif self.block_start == 5:
+                    self.gameobjects[0].sasquatch = heroes.Sasquatch(
+                        'Yeti', self.gamemap, list(tilecoords))
+                    self.gameobjects[0].sasquatch.set_start(tilecoords)
+                    self.gameobjects[1].insert_log(
+                        '>SET sasquatch: ' + str(tilecoords))
+                elif self.block_start == 6:
+                    self.gameobjects[0].sasquatch = heroes.Werewolf(
+                        'Wolf', self.gamemap, list(tilecoords))
+                    self.gameobjects[0].werewolf.set_start(tilecoords)
+                    self.gameobjects[1].insert_log(
+                        '>SET werewolf: ' + str(tilecoords))
+                elif self.block_start == 7:
                     self.gameobjects[0].portal_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Portal: ' + str(tilecoords))
-                elif self.block_start == 5:
+                elif self.block_start == 8:
                     self.gameobjects[0].key_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Key: ' + str(tilecoords))
-                elif self.block_start == 6:
+                elif self.block_start == 9:
                     self.gameobjects[0].stone_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Stones: ' + str(tilecoords))
-                elif self.block_start == 7:
+                elif self.block_start == 10:
                     self.gameobjects[0].temple_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Temple: ' + str(tilecoords))
@@ -103,14 +121,13 @@ class World2Renderer:
                     terraintype = self.gameobjects[0].getterrain(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>INFO: ' +
-                        const.TERRAIN_NAMES[terraintype] +
-                        ' ' + str(tilecoords)
+                        const.TERRAIN_NAMES[terraintype] + ' ' + str(tilecoords)
                     )
                 else:
                     # Deactivates cursor if clicked on same selected tile
                     self.gameobjects[0].selectedtile = None
 
-        # Bar of Buttons
+        # Button section
         elif coords[1] > (self.height - 48):
             self.gameobjects[0].selectedtile = None
 
@@ -161,7 +178,7 @@ class World2Renderer:
                     GameMap(self.screen, (0, 0), self.gamemap),
                     LogSection(self.screen, self.height -
                                48, (self.width - 300, 0)),
-                    BarButton(self.screen, self.width,
+                    ButtonSection(self.screen, self.width,
                               (0, len(self.gamemap.matrix) * 48))
                 ]
 
@@ -232,9 +249,9 @@ class GameMap(ScreenSection):
             TERRAINS.LAND.value: pygame.image.load('src/img/land.png'),
             TERRAINS.WATER.value: pygame.image.load('src/img/water.png'),
             TERRAINS.SAND.value: pygame.image.load('src/img/sand.png'),
-            TERRAINS.FOREST.value: pygame.image.load('src/img/forest.png')
-            # TERRAINS.SWAMP.value: pygame.image.load('src/img/swamp.png')
-            # TERRAINS.SNOW.value: pygame.image.load('src/img/snow.png')
+            TERRAINS.FOREST.value: pygame.image.load('src/img/forest.png'),
+            TERRAINS.SWAMP.value: pygame.image.load('src/img/swamp.png'),
+            TERRAINS.SNOW.value: pygame.image.load('src/img/snow.png')
         }
 
         # Map cursor
@@ -245,15 +262,23 @@ class GameMap(ScreenSection):
         # Decision indicator
         self.decisionimg = pygame.image.load('src/img/decision.png')
 
-        # Character features
+        # Character instances
         self.human = None
         self.monkey = None
         self.octopus = None
+        self.crocodile = None
+        self.sasquatch = None
+        self.werewolf = None
 
+        # Heroes
         self.humanImg = pygame.image.load('src/img/human.png')
         self.monkeyImg = pygame.image.load('src/img/monkey.png')
         self.octopusImg = pygame.image.load('src/img/octopus.png')
-        self.yetiImg = pygame.image.load("src/img/yeti.png")
+        self.crocodileImg = pygame.image.load('src/img/crocodile.png')
+        self.yetiImg = pygame.image.load("src/img/sasquatch.png")
+        self.wolfImg = pygame.image.load("src/img/werewolf.png")
+
+        # Other buttons
         self.starImg = pygame.image.load("src/img/star.png")
         self.pImg = pygame.image.load("src/img/letterP.png")
         self.kImg = pygame.image.load("src/img/key.png")
@@ -436,13 +461,13 @@ class LogSection(ScreenSection):
         self.texts = []
 
 
-class BarButton(ScreenSection):
+class ButtonSection(ScreenSection):
     """
-    Bar for Buttons and Actions (Start and Finish)
+    Buttons and sctions section
     """
 
     def __init__(self, gd, width, coords):
-        super(BarButton, self).__init__(gd, coords)
+        super(ButtonSection, self).__init__(gd, coords)
 
         # Info section
         self.color = (80, 80, 80)
@@ -452,6 +477,9 @@ class BarButton(ScreenSection):
         self.buttonHuman = pygame.image.load("src/img/human.png")
         self.buttonMonkey = pygame.image.load("src/img/monkey.png")
         self.buttonOctopus = pygame.image.load("src/img/octopus.png")
+        self.buttonCroc = pygame.image.load("src/img/crocodile.png")
+        self.buttonSasq = pygame.image.load("src/img/sasquatch.png")
+        self.buttonWolf = pygame.image.load("src/img/werewolf.png")
         self.buttonP = pygame.image.load("src/img/letterP.png")
         self.buttonK = pygame.image.load("src/img/key.png")
         self.buttonS = pygame.image.load("src/img/letterS.png")
@@ -473,21 +501,27 @@ class BarButton(ScreenSection):
             self.buttonMonkey, (self.coords[0] + 48, self.coords[1]))
         self.screen.blit(
             self.buttonOctopus, (self.coords[0] + 48 * 2, self.coords[1]))
+        self.screen.blit(
+            self.buttonCroc, (self.coords[0] + 48 * 3, self.coords[1]))
+        self.screen.blit(
+            self.buttonSasq, (self.coords[0] + 48 * 4, self.coords[1]))
+        self.screen.blit(
+            self.buttonWolf, (self.coords[0] + 48 * 5, self.coords[1]))
 
-        # Game's features
+        # Objectives
         self.screen.blit(
-            self.buttonP, (self.coords[0] + 48 * 3, self.coords[1]))
+            self.buttonP, (self.coords[0] + 48 * 6, self.coords[1]))
         self.screen.blit(
-            self.buttonK, (self.coords[0] + 48 * 4, self.coords[1]))
+            self.buttonK, (self.coords[0] + 48 * 7, self.coords[1]))
         self.screen.blit(
-            self.buttonS, (self.coords[0] + 48 * 5, self.coords[1]))
+            self.buttonS, (self.coords[0] + 48 * 8, self.coords[1]))
         self.screen.blit(
-            self.buttonT, (self.coords[0] + 48 * 6, self.coords[1]))
+            self.buttonT, (self.coords[0] + 48 * 9, self.coords[1]))
 
-        # Algorithm A*
+        # Start search
         self.screen.blit(
-            self.buttonStar, (self.coords[0] + 48 * 7, self.coords[1]))
+            self.buttonStar, (self.coords[0] + 48 * 10, self.coords[1]))
 
         # Reset GameMap
         self.screen.blit(
-            self.buttonRestart, (self.coords[0] + 48 * 8, self.coords[1]))
+            self.buttonRestart, (self.coords[0] + 48 * 11, self.coords[1]))

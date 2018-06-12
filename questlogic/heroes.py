@@ -110,7 +110,8 @@ class Hero:
                 solution = search.df_search(problem, self.actions, enhance)
 
             elif algorithm.value == Algorithm.IDS.value:
-                solution = search.id_search(problem, self.actions, 1, 1, enhance)
+                solution = search.id_search(
+                    problem, self.actions, 1, 1, enhance)
 
         # This helps the renderer restart the map
         self.pos = self.__start
@@ -139,7 +140,7 @@ class Hero:
             raise ValueError(' start/goal')
 
         problem = search.MapProblem(self.gmap, self.__start,
-                                self.__goal, self.cost)
+                                    self.__goal, self.cost)
         return search.astar_search(problem)
 
     def set_start(self, start):
@@ -347,18 +348,18 @@ def assign_missions(chrs, gls):
 
     # Print results
     print('%-10s|%-7s|%-7s|%-7s|%-7s|%-7s|%-7s' %
-        ('HERO', 'I-T', 'I-T-P', 'I-S', 'I-S-P', 'I-K', 'I-K-P'),
+          ('HERO', 'I-T', 'I-T-P', 'I-S', 'I-S-P', 'I-K', 'I-K-P'),
           '-' * 57, sep='\n'
-        )
+          )
 
     costs = []
     for i, tr in enumerate(results):
         print('%-10s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s' %
-            (chrs[i].name,
-            tr[0].acc_cost, tr[1].acc_cost + tr[0].acc_cost,
-            tr[2].acc_cost, tr[3].acc_cost + tr[2].acc_cost,
-            tr[4].acc_cost, tr[5].acc_cost + tr[4].acc_cost)
-            )
+              (chrs[i].name,
+               tr[0].acc_cost, tr[1].acc_cost + tr[0].acc_cost,
+               tr[2].acc_cost, tr[3].acc_cost + tr[2].acc_cost,
+               tr[4].acc_cost, tr[5].acc_cost + tr[4].acc_cost)
+              )
         costs.append([
             (0, tr[1].acc_cost + tr[0].acc_cost),
             (1, tr[3].acc_cost + tr[2].acc_cost),
@@ -370,7 +371,7 @@ def assign_missions(chrs, gls):
     assignment_names = ['Temple', 'Stones', 'Key']
 
     print('\nMission assignment:')
-    for i,c in enumerate(chrs):
+    for i, c in enumerate(chrs):
         print('%-10s:%s' % (c.name, assignment_names[assignments[i]]))
 
     return __build_paths(
@@ -379,6 +380,7 @@ def assign_missions(chrs, gls):
         (results[2][assignments[2] * 2], results[2][assignments[2] * 2 + 1]),
     )
 
+
 def __build_paths(*missions):
     paths = []
 
@@ -386,6 +388,7 @@ def __build_paths(*missions):
         paths.append(__build_path(m))
 
     return paths
+
 
 def __build_path(s_i_p):
     """ Builds path from start point, to item and then to portal. """

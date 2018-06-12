@@ -6,8 +6,11 @@ is actually a simulation for Artificial Intelligence class
 import sys
 from game import artificialquest as aqgame
 
+def printUsage():
+    print("\nUsage\n\trun.py [dungeon|world1|world2]")
+
 if len(sys.argv) < 2:
-    print("\nUsage\n\trun.py [dungeon|world]")
+    printUsage()
 else:
     argument = sys.argv[1].lower()
 
@@ -18,8 +21,8 @@ else:
     elif argument == "world2":
         gtype = aqgame.GameType.WORLD2
     else:
-        print("\nUsage\n\trun.py [dungeon|world1|world2]")
-        exit()
+        printUsage()
+        exit(1)
 
     game = aqgame.Game(gtype)
     game.run()

@@ -27,7 +27,7 @@ class World1Renderer:
         self.gameobjects = [
             GameMap(self.screen, (0, 0), self.gamemap),
             LogSection(self.screen, height - 48, (width - 300, 0)),
-            BarButton(self.screen, width, (0, len(gamemap.matrix) * 48))
+            ButtonSection(self.screen, width, (0, len(gamemap.matrix) * 48))
         ]
 
         # Attributes for blocking clicks and keyboard events
@@ -161,7 +161,7 @@ class World1Renderer:
                     GameMap(self.screen, (0, 0), self.gamemap),
                     LogSection(self.screen, self.height -
                                48, (self.width - 300, 0)),
-                    BarButton(self.screen, self.width,
+                    ButtonSection(self.screen, self.width,
                               (0, len(self.gamemap.matrix) * 48))
                 ]
 
@@ -433,13 +433,13 @@ class LogSection(ScreenSection):
         self.texts = []
 
 
-class BarButton(ScreenSection):
+class ButtonSection(ScreenSection):
     """
     Bar for Buttons and Actions (Start and Finish)
     """
 
     def __init__(self, gd, width, coords):
-        super(BarButton, self).__init__(gd, coords)
+        super(ButtonSection, self).__init__(gd, coords)
 
         # Info section
         self.color = (80, 80, 80)

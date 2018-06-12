@@ -12,7 +12,9 @@ TERRAIN_NAMES = {
     3: 'Land',
     4: 'Water',
     5: 'Sand',
-    6: 'Forest'
+    6: 'Forest',
+    7: 'Swamp',
+    8: 'Snow'
 }
 
 class Terrain(Enum):
