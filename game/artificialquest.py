@@ -4,17 +4,24 @@ all the event handling and rendering of the simulation.
 '''
 import pygame
 from questlogic import maps
-from . import renders, rendersProject
+from . import renders, world1renderer, world2renderer
+from enum import Enum
 
-class Game(object):
+class GameType(Enum):
+    DUNGEON = 1
+    WORLD1 = 2
+    WORLD2 = 3
+
+
+class Game:
     """
     Main class of the simulation. It includes the logic part of the project,
     such as map data and characters, and a rendering object to manage all the
-    images on screen
+    images on screen.
     """
 
     def __init__(self, typeGame):
-        self.gamemap = maps.Map('src/maps/mission1' if typeGame else 'src/maps/dungeon')
+        self.gamemap = Game.get_map(typeGame)
         self.width = len(self.gamemap.matrix[0]) * 48 + 300
         self.height = len(self.gamemap.matrix) * 48 + 48
 
@@ -26,11 +33,10 @@ class Game(object):
         self.screen = pygame.display.set_mode((self.width, self.height))
 
         self.clk = pygame.time.Clock()
-        self.renderer = \
-            rendersProject.RendererProject(self.screen, self.gamemap, self.width, self.height) \
-            if typeGame else renders.Renderer(self.screen, self.gamemap, self.width, self.height)
+        rend = Game.get_renderer(typeGame)
+        self.renderer = rend(self.screen, self.gamemap, self.width, self.height)
 
-    def run(self, typeGame):
+    def run(self):
         ''' Starts rendering game objects and opens the window. '''
 
         while True:
@@ -46,3 +52,22 @@ class Game(object):
 
             self.renderer.render()
             pygame.display.update()
+    
+    @staticmethod
+    def get_renderer(gtype):
+        if gtype == GameType.DUNGEON:
+            return renders.Renderer
+        elif gtype == GameType.WORLD1:
+            return world1renderer.World1Renderer
+        elif gtype == GameType.WORLD2:
+            return world2renderer.World2Renderer
+    
+    @staticmethod
+    def get_map(gmap):
+        if gmap == GameType.DUNGEON:
+            return maps.Map('src/maps/dungeon')
+        elif gmap == GameType.WORLD1:
+            return maps.Map('src/maps/mission1')
+        elif gmap == GameType.WORLD2:
+            return maps.Map('src/maps/mission2')
+

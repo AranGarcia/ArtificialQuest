@@ -55,7 +55,7 @@ class Map:
             for digit in line.split():
                 value = int(digit)
 
-                # Treat invalid values as 0 (as a wall)
+                # Invalid values will be treated as 0 (as a wall)
                 if not value in constants.valid_terrains:
                     self.matrix[index].append(0)
                 else:

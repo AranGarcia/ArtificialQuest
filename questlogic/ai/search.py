@@ -16,12 +16,14 @@ to reach.
 Each search algorithm returns a Solution object that can represent a FAILURE or
 a SUCCESS.
 """
-
 import math
 
 from enum import Enum
 from heapq import heapify, heappush, heappop
-from constants import MoveDir, Terrain
+import constants
+
+MoveDir = constants.MoveDir
+Terrain = constants.Terrain
 
 #####################################
 # Data structures used in searching #
@@ -40,13 +42,13 @@ class HeapNode:
         self.state = state
 
     def __eq__(self, other):
-        return self.state.f == other.state.f
+        return self.state == other.state
 
     def __gt__(self, other):
-        return self.state.f > other.state.f
+        return self.state > other.state
 
     def __lt__(self, other):
-        return self.state.f < other.state.f
+        return self.state < other.state
 
 
 class StateHeap:
@@ -59,8 +61,12 @@ class StateHeap:
     - Peek at the smallest cost node in the heap.
     """
 
-    def __init__(self):
+    def __init__(self, startlist=None):
         self.heap = []
+
+        if startlist:
+            for sn in startlist:
+                heappush(self.heap, HeapNode(sn))
 
     def get_min(self):
         """ Get the smallest cost node (the node on top of the heap). """
@@ -85,6 +91,7 @@ class StateHeap:
 
     def __len__(self):
         return len(self.heap)
+
 
 ##############################################
 # Data structures for problem representation #
@@ -133,8 +140,45 @@ class HNode(Node):
     def hfunc(self):
         return self.acc_cost + self.dist
 
+    def __eq__(self, other):
+        return self.f == other.f
+
+    def __gt__(self, other):
+        return self.f > other.f
+
+    def __lt__(self, other):
+        return self.f < other.f
+
+
+class ANode:
+    """
+    A node representing an element in the assignment path of the cost tables.
+    """
+
+    def __init__(self, mission, cost, parent=None):
+        self.mission = mission
+        self.assigned = set([mission])
+        self.f = cost
+        self.parent = parent
+
+        if parent:
+            self.level = parent.level + 1
+            self.assigned.update(parent.assigned)
+        else:
+            self.level = 0
+
     def __str__(self):
-        return 'HNode<C:%s, D:%d>' % (self.coord, self.dist)
+        return 'ANode<L:%d, M:%d, C:%s>' %\
+            (self.level, self.mission, str(self.f))
+
+    def __eq__(self, other):
+        return self.f == other.f
+
+    def __gt__(self, other):
+        return self.f > other.f
+
+    def __lt__(self, other):
+        return self.f < other.f
 
 
 class SolStat(Enum):
@@ -182,6 +226,11 @@ DIRECTIONS = {
     MoveDir.DOWN.value: (0, 1),
     MoveDir.UP.value: (0, -1)
 }
+
+
+###########################
+# Problem implementations #
+###########################
 
 
 class MapProblem:
@@ -258,6 +307,28 @@ class MapProblem:
             node.children.append(child)
         return child
 
+    def __enh_get_child(self, child, cost, parent, action):
+        """
+        Enhanced version of get_child.
+        """
+        if not self.gmap.is_walkable(child) or child in self.explored:
+            return None
+
+        # Iterate through generated nodes until none of them are redundant (if
+        # it generates more than one node) or until a terminal node is found.
+        aux = child
+        while True:
+            # Generate child nodes that aren't explored
+            neighbors = [f for f in
+                         filter(self.__already_explored, self.gmap.get_walkable(aux))]
+
+            if len(neighbors) != 1 or self.goal == aux:
+                return Node(aux, cost, parent, action)
+
+            # Node is redundant. Keep expanding.
+            self.explored.add(aux)
+            aux = neighbors[0]
+
     def get_succesors(self, node):
         return [
             HNode(
@@ -282,28 +353,6 @@ class MapProblem:
     def reset_explored(self):
         self.explored = set([self.initial.coord])
 
-    def __enh_get_child(self, child, cost, parent, action):
-        """
-        Enhanced version of get_child.
-        """
-        if not self.gmap.is_walkable(child) or child in self.explored:
-            return None
-
-        # Iterate through generated nodes until none of them are redundant (if
-        # it generates more than one node) or until a terminal node is found.
-        aux = child
-        while True:
-            # Generate child nodes that aren't explored
-            neighbors = [f for f in
-                         filter(self.__already_explored, self.gmap.get_walkable(aux))]
-
-            if len(neighbors) != 1 or self.goal == aux:
-                return Node(aux, cost, parent, action)
-
-            # Node is redundant. Keep expanding.
-            self.explored.add(aux)
-            aux = neighbors[0]
-
     def __get_direction(self, u, v):
         return DIR_DIFF[(u[0] - v[0], u[1] - v[1])]
 
@@ -314,12 +363,50 @@ class MapProblem:
     def __already_explored(self, coord):
         return not coord in self.explored
 
+
+class ScheduleProblem:
+    """
+    Formulation of the mission assignment problem. Given a matrix of tuples, in
+    which rows are a missions a character can do and the cost, a SOLUTION will
+    be returned as a list of a tuple for every row in the matrix with the best
+    possible job for all characters.
+    """
+
+    def __init__(self, matrix):
+        self.matrix = matrix
+        self.start = []
+
+        row = matrix[0]
+        for m in row:
+            self.start.append(ANode(m[0], m[1]))
+
+    def get_children(self, node):
+        children = []
+
+        if node.level < len(self.matrix) - 1:
+            for m in self.matrix[node.level + 1]:
+                if not m[0] in node.assigned:
+                    children.append(ANode(m[0], m[1] + node.f, node))
+
+        return children
+
+    @staticmethod
+    def order_missions(end_node):
+        order = []
+
+        aux = end_node
+        while aux:
+            order.insert(0, aux.mission)
+            aux = aux.parent
+
+        return order
+
 #####################
 # Search algorithms #
 #####################
 #
-# NOTE: Explicitly defined ENHANCED algorithms are useless until now.
-#       They will be removed in next revision of the project.
+#                       Blind search algorithm
+#
 
 # Breadth first search
 
@@ -481,7 +568,26 @@ def id_search(problem, actions, depth=1, increment=1, enhance=False):
         depth += increment
         problem.reset_explored()
 
-# Recursive best first search
+
+def schedule(matrix):
+    sp = ScheduleProblem(matrix)
+
+    frontier = StateHeap(sp.start)
+
+    while frontier:
+        node = frontier.pop()
+
+        children = sp.get_children(node)
+        if not children:
+            print('Cost of best possible solution:', node.f)
+            return ScheduleProblem.order_missions(node)
+        for c in children:
+            frontier.push(c)
+
+
+#
+#                       Heuristic search algorithm
+#
 
 
 def astar_search(problem):

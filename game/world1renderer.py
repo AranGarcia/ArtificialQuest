@@ -2,7 +2,8 @@
 Rendering module of the game. The main class Renderer handles various parts of
 the screen and receives the events for them.
 """
-import pygame, time
+import pygame
+import time
 from questlogic import constants as const, heroes
 from pygame.locals import *
 
@@ -13,27 +14,27 @@ KPEVENTS = set(['0', '1', '2', '3', '4', '5', '6'])
 ARROWEVENTS = set([273, 274, 275, 276])
 
 
-class RendererProject:
+class World1Renderer:
     """ Manager of the objects to be rendered in the game. """
 
     def __init__(self, gamedisplay, gamemap, width, height):
         self.screen = gamedisplay
         self.width = width
         self.height = height
-        self.gamemap= gamemap
+        self.gamemap = gamemap
 
         # Rendered objects
         self.gameobjects = [
             GameMap(self.screen, (0, 0), self.gamemap),
             LogSection(self.screen, height - 48, (width - 300, 0)),
-            BarButton(self.screen, width, (0, len(gamemap.matrix) * 48))
+            ButtonSection(self.screen, width, (0, len(gamemap.matrix) * 48))
         ]
 
         # Attributes for blocking clicks and keyboard events
         self.keyboard_block = False
         self.block_start = None
         self.input_actions = []
-        self.flagStone= 0
+        self.flagStone = 0
 
         # Key event mapping to constants
         self.key_actions = {
@@ -59,20 +60,20 @@ class RendererProject:
 
             if self.block_start != 0:
                 if self.block_start == 1:
-                    self.gameobjects[0].human= heroes.Human('Isildur',
-                        self.gamemap, list(tilecoords))
+                    self.gameobjects[0].human = heroes.Human(
+                        'Isildur', self.gamemap, list(tilecoords))
                     self.gameobjects[0].human.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>SET human: ' + str(tilecoords))
                 elif self.block_start == 2:
-                    self.gameobjects[0].monkey= heroes.Monkey('Boots',
-                        self.gamemap, list(tilecoords))
+                    self.gameobjects[0].monkey = heroes.Monkey(
+                        'Boots', self.gamemap, list(tilecoords))
                     self.gameobjects[0].monkey.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>SET monkey: ' + str(tilecoords))
                 elif self.block_start == 3:
-                    self.gameobjects[0].octopus= heroes.Octopus('Dave',
-                        self.gamemap, list(tilecoords))
+                    self.gameobjects[0].octopus = heroes.Octopus(
+                        'Dave', self.gamemap, list(tilecoords))
                     self.gameobjects[0].octopus.set_start(tilecoords)
                     self.gameobjects[1].insert_log(
                         '>SET octopus: ' + str(tilecoords))
@@ -115,19 +116,19 @@ class RendererProject:
 
             # Start algorithm using enhanced mode
             if coords[0] < (48):
-                self.block_start= 1
+                self.block_start = 1
             elif coords[0] < (48 * 2):
-                self.block_start= 2
+                self.block_start = 2
             elif coords[0] < (48 * 3):
-                self.block_start= 3
+                self.block_start = 3
             elif coords[0] < (48 * 4):
-                self.block_start= 4
+                self.block_start = 4
             elif coords[0] < (48 * 5):
-                self.block_start= 5
+                self.block_start = 5
             elif coords[0] < (48 * 6):
-                self.block_start= 6
+                self.block_start = 6
             elif coords[0] < (48 * 7):
-                self.block_start= 7
+                self.block_start = 7
 
             # Start algorithm
             elif coords[0] < (48 * 8):
@@ -144,34 +145,24 @@ class RendererProject:
                 ]
                 if not goals['key'] or not goals['temple'] or \
                         not goals['stones'] or not goals['portal']:
-                    self.gameobjects[1].insert_log('>ITEMS missing on map.');
+                    self.gameobjects[1].insert_log('>ITEMS missing on map.')
 
                 elif not all(fellowship):
-                    self.gameobjects[1].insert_log('>HEROES missing on map.');
+                    self.gameobjects[1].insert_log('>HEROES missing on map.')
                 else:
-                    # heroes.assign_missions(fellowship, goals)
-                    self.gameobjects[0].moveHuman= \
-                    self.gameobjects[0].moveMonkey= \
-                    self.gameobjects[0].moveOctapus= \
-                        [(0,12), (1,12), (2,12), (3,12), (4,12), (5,12), (6,12), (7,12),
-                        (7,11), (7,10), (7,9), (7,8), (7,7), (7,6), (7,5),
-                        (4,5), (3,5), (2,5), (1,5), (0,5),
-                        (0,6), (0,7), (0,8), (0,9), (0,10), (0,11),
-                        (1,11), (2,11), (3,11), (4,11), (5,11), (6,11),
-                        (6,10), (6,9), (6,8), (6,7), (6,6),
-                        (5,6), (4,6), (3,6), (2,6), (1,6),
-                        (1,7), (1,8), (1,9), (1,10),
-                        (2,10), (3,10), (4,10), (5,10),
-                        (5,9), (5,8), (5,7)]
+                    missions = heroes.assign_missions(fellowship, goals)
+                    self.gameobjects[0].moveHuman = missions[0]
+                    self.gameobjects[0].moveOctapus = missions[1]
+                    self.gameobjects[0].moveMonkey = missions[2]
 
             # Game reset
             elif coords[0] < (48 * 9):
                 self.gameobjects = [
                     GameMap(self.screen, (0, 0), self.gamemap),
-                    LogSection(self.screen, self.height - 48,
-                        (self.width - 300, 0)),
-                    BarButton(self.screen, self.width,
-                        (0, len(self.gamemap.matrix) * 48))
+                    LogSection(self.screen, self.height -
+                               48, (self.width - 300, 0)),
+                    ButtonSection(self.screen, self.width,
+                              (0, len(self.gamemap.matrix) * 48))
                 ]
 
     def keypressed(self, event):
@@ -262,22 +253,22 @@ class GameMap(ScreenSection):
         self.octopusImg = pygame.image.load('src/img/octopus.png')
         self.starImg = pygame.image.load("src/img/star.png")
         self.pImg = pygame.image.load("src/img/letterP.png")
-        self.kImg = pygame.image.load("src/img/letterK.png")
+        self.kImg = pygame.image.load("src/img/key.png")
         self.sImg = pygame.image.load("src/img/letterS.png")
         self.tImg = pygame.image.load("src/img/letterT.png")
 
         # Block for don't print images
-        self.blockImg= True
+        self.blockImg = True
 
         # Item positions
-        self.portal_pos  = None
+        self.portal_pos = None
         self.key_pos = None
         self.stone_pos = None
         self.temple_pos = None
 
-        self.moveHuman= []
-        self.moveMonkey= []
-        self.moveOctapus= []
+        self.moveHuman = []
+        self.moveMonkey = []
+        self.moveOctapus = []
 
     def render(self):
         """
@@ -297,11 +288,11 @@ class GameMap(ScreenSection):
         # Render Items when they have positions
         if self.portal_pos:
             self.screen.blit(
-                self.pImg, (self.portal_pos [0] * 48, self.portal_pos [1] * 48))
+                self.pImg, (self.portal_pos[0] * 48, self.portal_pos[1] * 48))
 
         if self.key_pos:
             self.screen.blit(
-                self.kImg, (self.key_pos [0] * 48, self.key_pos [1] * 48))
+                self.kImg, (self.key_pos[0] * 48, self.key_pos[1] * 48))
 
         if self.stone_pos:
             self.screen.blit(
@@ -309,40 +300,40 @@ class GameMap(ScreenSection):
 
         if self.temple_pos:
             self.screen.blit(
-                self.tImg, (self.temple_pos [0] * 48, self.temple_pos [1] * 48))
+                self.tImg, (self.temple_pos[0] * 48, self.temple_pos[1] * 48))
 
         # When the characters have positions
-
         if self.moveHuman:
-            self.human.pos= self.moveHuman.pop(0)
+            self.human.pos = self.moveHuman.pop(0)
             self.screen.blit(
-            self.humanImg, (self.human.pos[0] * 48,
-            self.human.pos[1] * 48))
+                self.humanImg, (self.human.pos[0] * 48,
+                                self.human.pos[1] * 48))
 
         if self.moveMonkey:
-            self.monkey.pos= self.moveMonkey.pop(0)
+            self.monkey.pos = self.moveMonkey.pop(0)
             self.screen.blit(
-            self.monkeyImg, (self.monkey.pos[0] * 48,
-            self.monkey.pos[1] * 48))
+                self.monkeyImg, (self.monkey.pos[0] * 48,
+                                 self.monkey.pos[1] * 48))
 
         if self.moveOctapus:
-            self.octopus.pos= self.moveOctapus.pop(0)
+            self.octopus.pos = self.moveOctapus.pop(0)
             self.screen.blit(
-            self.octopusImg, (self.octopus.pos[0] * 48,
-            self.octopus.pos[1] * 48))
+                self.octopusImg, (self.octopus.pos[0] * 48,
+                                  self.octopus.pos[1] * 48))
 
-            time.sleep(.15)
+            time.sleep(.25)
+
         else:
             if self.human:
                 # Render human
                 self.screen.blit(
                     self.humanImg, (self.human.pos[0] * 48,
-                    self.human.pos[1] * 48))
+                                    self.human.pos[1] * 48))
 
                 # Draw indicator where decisions where made
                 for dcs in self.human.decisions:
                     self.screen.blit(self.decisionimg,
-                    (dcs[0] * 48, dcs[1] * 48))
+                                     (dcs[0] * 48, dcs[1] * 48))
             if self.monkey:
                 # Render monkey
                 self.screen.blit(
@@ -352,7 +343,7 @@ class GameMap(ScreenSection):
                 # Draw indicator where decisions where made
                 for dcs in self.monkey.decisions:
                     self.screen.blit(self.decisionimg,
-                    (dcs[0] * 48, dcs[1] * 48))
+                                     (dcs[0] * 48, dcs[1] * 48))
             if self.octopus:
                 # Render octopus
                 self.screen.blit(
@@ -362,8 +353,7 @@ class GameMap(ScreenSection):
                 # Draw indicator where decisions where made
                 for dcs in self.octopus.decisions:
                     self.screen.blit(self.decisionimg,
-                    (dcs[0] * 48, dcs[1] * 48))
-
+                                     (dcs[0] * 48, dcs[1] * 48))
 
         # If seleciton active, render cursor
         if self.selectedtile:
@@ -395,6 +385,7 @@ class GameMap(ScreenSection):
         self.human.move(value)
         self.monkey.move(value)
         self.octopus.move(value)
+
 
 class LogSection(ScreenSection):
     """
@@ -442,13 +433,13 @@ class LogSection(ScreenSection):
         self.texts = []
 
 
-class BarButton(ScreenSection):
+class ButtonSection(ScreenSection):
     """
     Bar for Buttons and Actions (Start and Finish)
     """
 
     def __init__(self, gd, width, coords):
-        super(BarButton, self).__init__(gd, coords)
+        super(ButtonSection, self).__init__(gd, coords)
 
         # Info section
         self.color = (80, 80, 80)
@@ -459,12 +450,11 @@ class BarButton(ScreenSection):
         self.buttonMonkey = pygame.image.load("src/img/monkey.png")
         self.buttonOctopus = pygame.image.load("src/img/octopus.png")
         self.buttonP = pygame.image.load("src/img/letterP.png")
-        self.buttonK = pygame.image.load("src/img/letterK.png")
+        self.buttonK = pygame.image.load("src/img/key.png")
         self.buttonS = pygame.image.load("src/img/letterS.png")
         self.buttonT = pygame.image.load("src/img/letterT.png")
         self.buttonStar = pygame.image.load("src/img/star.png")
         self.buttonRestart = pygame.image.load("src/img/restart.png")
-
 
     def render(self):
         pygame.draw.rect(self.screen, self.color, (
