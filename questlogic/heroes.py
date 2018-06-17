@@ -1,6 +1,6 @@
 import math
 
-from ai import search
+from ai import search, genetics
 from constants import Algorithm, MoveDir, Terrain
 
 

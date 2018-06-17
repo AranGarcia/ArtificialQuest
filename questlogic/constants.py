@@ -17,6 +17,7 @@ TERRAIN_NAMES = {
     8: 'Snow'
 }
 
+
 class Terrain(Enum):
     """ Terrain type constants """
     WALL = 0
@@ -29,6 +30,7 @@ class Terrain(Enum):
     SWAMP = 7
     SNOW = 8
 
+
 class MoveDir(Enum):
     """ Character movement constants """
     UP = 1
@@ -36,8 +38,26 @@ class MoveDir(Enum):
     RIGHT = 3
     LEFT = 4
 
+
 class Algorithm(Enum):
     """ Algorithm type constants """
     BFS = 1
     DFS = 2
     IDS = 3
+
+
+class Heroes(Enum):
+    HUMAN = 1
+    MONKEY = 2
+    OCTOPUS = 3
+    CROCODILE = 4
+    SASQUATCH = 5
+    WEREWOLF = 6
+
+
+class Missions(Enum):
+    KEY = 1
+    TEMPLE = 2
+    STONES = 3
+    FRIEND = 4
+    NO_MISSION = 5
