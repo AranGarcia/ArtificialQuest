@@ -6,14 +6,24 @@ is actually a simulation for Artificial Intelligence class
 import sys
 from game import artificialquest as aqgame
 
+def printUsage():
+    print("\nUsage\n\trun.py [dungeon|world1|world2]")
+
 if len(sys.argv) < 2:
-    print ("\n\tIntroduce practice2 or project.\n")
+    printUsage()
 else:
-    if sys.argv[1] == "practice2":
-        game = aqgame.Game(False)
-        game.run(False)
-    elif sys.argv[1] == "project":
-        game = aqgame.Game(True)
-        game.run(True)
+    argument = sys.argv[1].lower()
+
+    if argument == "dungeon":
+        gtype = aqgame.GameType.DUNGEON
+    elif argument == "world1":
+        gtype = aqgame.GameType.WORLD1
+    elif argument == "world2":
+        gtype = aqgame.GameType.WORLD2
     else:
-        print ("This option is not valid.")
+        printUsage()
+        exit(1)
+
+    game = aqgame.Game(gtype)
+    game.run()
+    

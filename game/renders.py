@@ -25,7 +25,7 @@ class Renderer:
         self.gameobjects = [
             GameMap(self.screen, (0, 0), gamemap),
             LogSection(self.screen, height - 48, (width - 300, 0)),
-            BarButton(self.screen, width, (0, len(gamemap.matrix) * 48))
+            ButtonSection(self.screen, width, (0, len(gamemap.matrix) * 48))
         ]
 
         # Attributes for blocking clicks and keyboard events
@@ -368,13 +368,13 @@ class LogSection(ScreenSection):
         self.texts = []
 
 
-class BarButton(ScreenSection):
+class ButtonSection(ScreenSection):
     """
     Bar for Buttons and Actions (Start and Finish)
     """
 
     def __init__(self, gd, width, coords):
-        super(BarButton, self).__init__(gd, coords)
+        super(ButtonSection, self).__init__(gd, coords)
 
         # Info section
         self.color = (80, 80, 80)

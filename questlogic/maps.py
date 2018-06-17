@@ -55,7 +55,7 @@ class Map:
             for digit in line.split():
                 value = int(digit)
 
-                # Treat invalid values as 0 (as a wall)
+                # Invalid values will be treated as 0 (as a wall)
                 if not value in constants.valid_terrains:
                     self.matrix[index].append(0)
                 else:
@@ -131,7 +131,7 @@ class Map:
                  constants.Terrain(self.matrix[coord[1]][coord[0] - 1]))
             )
         # Right
-        if coord[1] < len(self.matrix[0]) - 1:
+        if coord[0] < len(self.matrix[0]) - 1:
             succesors.append(
                 ((coord[0] + 1, coord[1]),
                  constants.Terrain(self.matrix[coord[1]][coord[0] + 1]))
