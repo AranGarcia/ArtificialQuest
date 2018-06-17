@@ -226,7 +226,7 @@ class Human(Hero):
         super(Human, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: math.inf,
+            # Terrain.MOUNTAIN: math.inf,
             Terrain.LAND: 1,
             Terrain.WATER: 2,
             Terrain.SAND: 3,
@@ -254,7 +254,7 @@ class Monkey(Hero):
         super(Monkey, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: math.inf,
+            # Terrain.MOUNTAIN: math.inf,
             Terrain.LAND: 2,
             Terrain.WATER: 4,
             Terrain.SAND: 3,
@@ -282,7 +282,7 @@ class Octopus(Hero):
         super(Octopus, self).__init__(name, gmap, pos)
 
         self.cost = {
-            Terrain.MOUNTAIN: math.inf,
+            # Terrain.MOUNTAIN: math.inf,
             Terrain.LAND: 2,
             Terrain.WATER: 1,
             Terrain.SAND: math.inf,
