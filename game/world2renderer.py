@@ -58,60 +58,139 @@ class World2Renderer:
             tilecoords = ((coords[0] // 48), (coords[1] // 48))
             tilecoordsImgs = ((coords[0]), (coords[1]))
 
-            if self.block_start != 0:
-                if self.block_start == 1:
-                    self.gameobjects[0].human = heroes.Human(
-                        'Isildur', self.gamemap, list(tilecoords))
-                    self.gameobjects[0].human.set_start(tilecoords)
+            # Setting hero or objective on map
+            if self.block_start >= 0:
+                # Human
+                if self.block_start == 0:
+                    human = heroes.Human(
+                        const.Heroes.HUMAN, self.gamemap, list(tilecoords))
+                    human.set_start(tilecoords)
+
+                    if not const.Heroes.HUMAN.value in self.gameobjects[0].selected_heroes:
+                        self.gameobjects[0].heroes.append(human)
+                        self.gameobjects[0].selected_heroes.add(
+                            const.Heroes.HUMAN.value)
+
                     self.gameobjects[1].insert_log(
                         '>SET human: ' + str(tilecoords))
-                elif self.block_start == 2:
-                    self.gameobjects[0].monkey = heroes.Monkey(
-                        'Boots', self.gamemap, list(tilecoords))
-                    self.gameobjects[0].monkey.set_start(tilecoords)
+
+                # Monkey
+                elif self.block_start == 1:
+                    monkey = heroes.Monkey(
+                        const.Heroes.MONKEY, self.gamemap, list(tilecoords))
+                    monkey.set_start(tilecoords)
+
+                    if not const.Heroes.MONKEY.value in self.gameobjects[0].selected_heroes:
+                        self.gameobjects[0].heroes.append(monkey)
+                        self.gameobjects[0].selected_heroes.add(
+                            const.Heroes.MONKEY.value)
+
                     self.gameobjects[1].insert_log(
                         '>SET monkey: ' + str(tilecoords))
-                elif self.block_start == 3:
-                    self.gameobjects[0].octopus = heroes.Octopus(
-                        'Dave', self.gamemap, list(tilecoords))
-                    self.gameobjects[0].octopus.set_start(tilecoords)
+
+                # Octopus
+                elif self.block_start == 2:
+                    octopus = heroes.Octopus(
+                        const.Heroes.OCTOPUS, self.gamemap, list(tilecoords))
+                    octopus.set_start(tilecoords)
+
+                    if not const.Heroes.OCTOPUS.value in self.gameobjects[0].selected_heroes:
+                        self.gameobjects[0].heroes.append(octopus)
+                        self.gameobjects[0].selected_heroes.add(
+                            const.Heroes.OCTOPUS.value)
+
                     self.gameobjects[1].insert_log(
                         '>SET octopus: ' + str(tilecoords))
-                elif self.block_start == 4:
-                    self.gameobjects[0].crocodile = heroes.Crocodile(
-                        'Croc', self.gamemap, list(tilecoords))
-                    self.gameobjects[0].crocodile.set_start(tilecoords)
+
+                # Crocodile
+                elif self.block_start == 3:
+                    crocodile = heroes.Crocodile(
+                        const.Heroes.CROCODILE, self.gamemap, list(tilecoords))
+                    crocodile.set_start(tilecoords)
+
+                    if not const.Heroes.CROCODILE.value in self.gameobjects[0].selected_heroes:
+                        self.gameobjects[0].heroes.append(crocodile)
+                        self.gameobjects[0].selected_heroes.add(
+                            const.Heroes.CROCODILE.value)
+
                     self.gameobjects[1].insert_log(
                         '>SET crocodile: ' + str(tilecoords))
-                elif self.block_start == 5:
-                    self.gameobjects[0].sasquatch = heroes.Sasquatch(
-                        'Yeti', self.gamemap, list(tilecoords))
-                    self.gameobjects[0].sasquatch.set_start(tilecoords)
+
+                # Sasquatch
+                elif self.block_start == 4:
+                    sasquatch = heroes.Sasquatch(
+                        const.Heroes.SASQUATCH, self.gamemap, list(tilecoords))
+                    sasquatch.set_start(tilecoords)
+
+                    if not const.Heroes.SASQUATCH.value in self.gameobjects[0].selected_heroes:
+                        self.gameobjects[0].heroes.append(sasquatch)
+                        self.gameobjects[0].selected_heroes.add(
+                            const.Heroes.SASQUATCH.value)
+
                     self.gameobjects[1].insert_log(
                         '>SET sasquatch: ' + str(tilecoords))
-                elif self.block_start == 6:
-                    self.gameobjects[0].werewolf = heroes.Werewolf(
-                        'Wolf', self.gamemap, list(tilecoords))
-                    self.gameobjects[0].werewolf.set_start(tilecoords)
+
+                # Werewolf
+                elif self.block_start == 5:
+                    werewolf = heroes.Werewolf(
+                        const.Heroes.WEREWOLF, self.gamemap, list(tilecoords))
+                    werewolf.set_start(tilecoords)
+
+                    if not const.Heroes.WEREWOLF.value in self.gameobjects[0].selected_heroes:
+                        self.gameobjects[0].heroes.append(werewolf)
+                        self.gameobjects[0].selected_heroes.add(
+                            const.Heroes.WEREWOLF.value)
+
                     self.gameobjects[1].insert_log(
                         '>SET werewolf: ' + str(tilecoords))
+
+                # Entrance
+                elif self.block_start == 6:
+                    self.gameobjects[0].entrances.append(tilecoords)
+
+                    if len(self.gameobjects[0].entrances) > 3:
+                        self.gameobjects[0].entrances.pop(0)
+
+                    self.gameobjects[1].insert_log(
+                        '>SET Entrance: ' + str(tilecoords))
+
+                # Portal
                 elif self.block_start == 7:
                     self.gameobjects[0].portal_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Portal: ' + str(tilecoords))
+
+                # Key
                 elif self.block_start == 8:
                     self.gameobjects[0].key_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Key: ' + str(tilecoords))
+
+                # Stones
                 elif self.block_start == 9:
                     self.gameobjects[0].stone_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Stones: ' + str(tilecoords))
+
+                # Temple
                 elif self.block_start == 10:
                     self.gameobjects[0].temple_pos = tilecoords
                     self.gameobjects[1].insert_log(
                         '>SET Temple: ' + str(tilecoords))
-                self.block_start = 0
+
+                #  Friend
+                elif self.block_start == 11:
+                    self.gameobjects[0].friend_pos = tilecoords
+                    self.gameobjects[1].insert_log(
+                        '>SET Friend: ' + str(tilecoords))
+
+                # Verify that only three heroes have been chosen
+                if len(self.gameobjects[0].heroes) > 3:
+                    ht = self.gameobjects[0].heroes.pop(0)
+                    self.gameobjects[0].selected_heroes.remove(
+                        ht.species.value)
+
+                self.block_start = -1
             else:
                 if tilecoords != self.gameobjects[0].selectedtile:
                     # Selection cursor on map
@@ -132,25 +211,12 @@ class World2Renderer:
         elif coords[1] > (self.height - 48):
             self.gameobjects[0].selectedtile = None
 
-            # Hero selection
-            if coords[0] < (48):
-                self.block_start = 1
-            elif coords[0] < (48 * 2):
-                self.block_start = 2
-            elif coords[0] < (48 * 3):
-                self.block_start = 3
-            elif coords[0] < (48 * 4):
-                self.block_start = 4
-            elif coords[0] < (48 * 5):
-                self.block_start = 5
-            elif coords[0] < (48 * 6):
-                self.block_start = 6
-            elif coords[0] < (48 * 7):
-                self.block_start = 7
+            self.block_start = (coords[0] // 48)
 
             # Start algorithm
-            elif coords[0] < (48 * 8):
-                goals = {
+            if self.block_start == 12:
+                print("Genetic algorithm")
+                """ goals = {
                     'key': self.gameobjects[0].key_pos,
                     'stones': self.gameobjects[0].stone_pos,
                     'temple': self.gameobjects[0].temple_pos,
@@ -172,9 +238,11 @@ class World2Renderer:
                     self.gameobjects[0].moveHuman = missions[0]
                     self.gameobjects[0].moveOctapus = missions[1]
                     self.gameobjects[0].moveMonkey = missions[2]
+                
+                self.block_start = -1 """
 
             # Game reset
-            elif coords[0] < (48 * 9):
+            elif self.block_start == 13:
                 self.gameobjects = [
                     GameMap(self.screen, (0, 0), self.gamemap),
                     LogSection(self.screen, self.height -
@@ -182,39 +250,18 @@ class World2Renderer:
                     ButtonSection(self.screen, self.width,
                                   (0, len(self.gamemap.matrix) * 48))
                 ]
+                self.block_start = -1
 
     def keypressed(self, event):
         """ Render on key press event. """
 
-        if self.keyboard_block:
-            if event.key in ARROWEVENTS:
-                act = self.key_actions[event.key]
-                if act not in self.input_actions:
-                    self.input_actions.append(act)
-                if len(self.input_actions) == 4:
-                    self.keyboard_block = False
-                    self.gameobjects[0].human.actions = self.input_actions
-                    self.gameobjects[1].insert_log('>DONE receiving actions.')
-                    self.gameobjects[1].insert_log(' Depth algorithm ready.')
-            else:
-                self.keyboard_block = False
-                self.gameobjects[1].insert_log('>ERROR: use only arrows')
-                self.gameobjects[1].insert_log(' to input directions.')
-                self.gameobjects[2].selected_algorithm = None
-                self.input_actions.clear()
-        else:
-            # Movement
-            if event.key in ARROWEVENTS:
-                self.gameobjects[0].movehero(event.key)
-
-            # Terrain change
-            elif self.gameobjects[0].selectedtile and event.unicode in KPEVENTS:
-                self.gameobjects[0].changeterrain(int(event.unicode))
-                terraintype = self.gameobjects[0].getselected()
-                self.gameobjects[1].insert_log(
-                    '>' + const.TERRAIN_NAMES[terraintype] +
-                    ' ' + str(self.gameobjects[0].selectedtile) + ' CHANGED'
-                )
+        if self.gameobjects[0].selectedtile and event.unicode in KPEVENTS:
+            self.gameobjects[0].changeterrain(int(event.unicode))
+            terraintype = self.gameobjects[0].getselected()
+            self.gameobjects[1].insert_log(
+                '>' + const.TERRAIN_NAMES[terraintype] +
+                ' ' + str(self.gameobjects[0].selectedtile) + ' CHANGED'
+            )
 
 
 class ScreenSection:
@@ -265,36 +312,37 @@ class GameMap(ScreenSection):
         self.decisionimg = pygame.image.load('src/img/decision.png')
 
         # Character instances
-        self.human = None
-        self.monkey = None
-        self.octopus = None
-        self.crocodile = None
-        self.sasquatch = None
-        self.werewolf = None
+        self.heroes = []
+        self.selected_heroes = set()
 
         # Heroes
-        self.humanImg = pygame.image.load('src/img/human.png')
-        self.monkeyImg = pygame.image.load('src/img/monkey.png')
-        self.octopusImg = pygame.image.load('src/img/octopus.png')
-        self.crocodileImg = pygame.image.load('src/img/crocodile.png')
-        self.sasquatchImg = pygame.image.load("src/img/sasquatch.png")
-        self.wolfImg = pygame.image.load("src/img/werewolf.png")
-
+        self.hero_imgs = {
+            const.Heroes.HUMAN.value: pygame.image.load('src/img/human.png'),
+            const.Heroes.MONKEY.value: pygame.image.load('src/img/monkey.png'),
+            const.Heroes.OCTOPUS.value: pygame.image.load('src/img/octopus.png'),
+            const.Heroes.CROCODILE.value: pygame.image.load('src/img/crocodile.png'),
+            const.Heroes.SASQUATCH.value: pygame.image.load("src/img/sasquatch.png"),
+            const.Heroes.WEREWOLF.value: pygame.image.load("src/img/werewolf.png")
+        }
         # Other buttons
         self.starImg = pygame.image.load("src/img/star.png")
-        self.pImg = pygame.image.load("src/img/letterP.png")
+        self.eImg = pygame.image.load("src/img/entrance.png")
+        self.pImg = pygame.image.load("src/img/portal.png")
         self.kImg = pygame.image.load("src/img/key.png")
-        self.sImg = pygame.image.load("src/img/letterS.png")
-        self.tImg = pygame.image.load("src/img/letterT.png")
+        self.sImg = pygame.image.load("src/img/stones.png")
+        self.tImg = pygame.image.load("src/img/temple.png")
+        self.fImg = pygame.image.load("src/img/friend.png")
 
         # Block for don't print images
         self.blockImg = True
 
         # Item positions
+        self.entrances = []
         self.portal_pos = None
         self.key_pos = None
         self.stone_pos = None
         self.temple_pos = None
+        self.friend_pos = None
 
     def render(self):
         """
@@ -312,6 +360,9 @@ class GameMap(ScreenSection):
                 self.screen.blit(self.landtiles[value], (c * 48, r * 48))
 
         # Render Items when they have positions
+        for e in self.entrances:
+            self.screen.blit(self.eImg, (e[0] * 48, e[1] * 48))
+
         if self.portal_pos:
             self.screen.blit(
                 self.pImg, (self.portal_pos[0] * 48, self.portal_pos[1] * 48))
@@ -328,38 +379,13 @@ class GameMap(ScreenSection):
             self.screen.blit(
                 self.tImg, (self.temple_pos[0] * 48, self.temple_pos[1] * 48))
 
+        if self.friend_pos:
+            self.screen.blit(
+                self.fImg, (self.friend_pos[0] * 48, self.friend_pos[1] * 48))
 
-        if self.human:
+        for h in self.heroes:
             self.screen.blit(
-                self.humanImg, (self.human.pos[0] * 48,
-                                self.human.pos[1] * 48))
-
-        if self.monkey:
-            # Render monkey
-            self.screen.blit(
-                self.monkeyImg,
-                (self.monkey.pos[0] * 48, self.monkey.pos[1] * 48))
-
-        if self.octopus:
-            self.screen.blit(
-                self.octopusImg,
-                (self.octopus.pos[0] * 48, self.octopus.pos[1] * 48))
-
-        if self.crocodile:
-            self.screen.blit(
-                self.crocodileImg,
-                (self.crocodile.pos[0] * 48, self.crocodile.pos[1] * 48))
-        
-        if self.sasquatch:
-            self.screen.blit(
-                self.sasquatchImg,
-                (self.sasquatch.pos[0] * 48, self.sasquatch.pos[1] * 48))
-        
-        if self.werewolf:
-            self.screen.blit(
-                self.wolfImg,
-                (self.werewolf.pos[0] * 48, self.werewolf.pos[1] * 48))
-
+                self.hero_imgs[h.species.value], (h.pos[0] * 48, h.pos[1] * 48))
 
         # If seleciton active, render cursor
         if self.selectedtile:
@@ -387,10 +413,12 @@ class GameMap(ScreenSection):
         y = self.selectedtile[1]
         self.gamemap.matrix[y][x] = value
 
+    # TODO: Apply the method to selected heroes selecte
     def movehero(self, value):
-        self.human.move(value)
-        self.monkey.move(value)
-        self.octopus.move(value)
+        pass
+        # self.human.move(value)
+        # self.monkey.move(value)
+        # self.octopus.move(value)
 
 
 class LogSection(ScreenSection):
@@ -441,7 +469,7 @@ class LogSection(ScreenSection):
 
 class ButtonSection(ScreenSection):
     """
-    Buttons and sctions section
+    Buttons section
     """
 
     def __init__(self, gd, width, coords):
@@ -458,10 +486,12 @@ class ButtonSection(ScreenSection):
         self.buttonCroc = pygame.image.load("src/img/crocodile.png")
         self.buttonSasq = pygame.image.load("src/img/sasquatch.png")
         self.buttonWolf = pygame.image.load("src/img/werewolf.png")
-        self.buttonP = pygame.image.load("src/img/letterP.png")
-        self.buttonK = pygame.image.load("src/img/key.png")
-        self.buttonS = pygame.image.load("src/img/letterS.png")
-        self.buttonT = pygame.image.load("src/img/letterT.png")
+        self.buttonEntrance = pygame.image.load("src/img/entrance.png")
+        self.buttonPortal = pygame.image.load("src/img/portal.png")
+        self.buttonKey = pygame.image.load("src/img/key.png")
+        self.buttonStones = pygame.image.load("src/img/stones.png")
+        self.buttonTemple = pygame.image.load("src/img/temple.png")
+        self.buttonFriend = pygame.image.load("src/img/friend.png")
         self.buttonStar = pygame.image.load("src/img/star.png")
         self.buttonRestart = pygame.image.load("src/img/restart.png")
 
@@ -488,18 +518,22 @@ class ButtonSection(ScreenSection):
 
         # Objectives
         self.screen.blit(
-            self.buttonP, (self.coords[0] + 48 * 6, self.coords[1]))
+            self.buttonEntrance, (self.coords[0] + 48 * 6, self.coords[1]))
         self.screen.blit(
-            self.buttonK, (self.coords[0] + 48 * 7, self.coords[1]))
+            self.buttonPortal, (self.coords[0] + 48 * 7, self.coords[1]))
         self.screen.blit(
-            self.buttonS, (self.coords[0] + 48 * 8, self.coords[1]))
+            self.buttonKey, (self.coords[0] + 48 * 8, self.coords[1]))
         self.screen.blit(
-            self.buttonT, (self.coords[0] + 48 * 9, self.coords[1]))
+            self.buttonStones, (self.coords[0] + 48 * 9, self.coords[1]))
+        self.screen.blit(
+            self.buttonTemple, (self.coords[0] + 48 * 10, self.coords[1]))
+        self.screen.blit(
+            self.buttonFriend, (self.coords[0] + 48 * 11, self.coords[1]))
 
         # Start search
         self.screen.blit(
-            self.buttonStar, (self.coords[0] + 48 * 10, self.coords[1]))
+            self.buttonStar, (self.coords[0] + 48 * 12, self.coords[1]))
 
         # Reset GameMap
         self.screen.blit(
-            self.buttonRestart, (self.coords[0] + 48 * 11, self.coords[1]))
+            self.buttonRestart, (self.coords[0] + 48 * 13, self.coords[1]))

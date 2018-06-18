@@ -16,8 +16,8 @@ class PathGenerator:
         """
 
         # Helps keep track of which elements have already been used
-        unchosen_heroes = [1,2,3,4,5,6]
-        unchosen_missions =  [1,2,3,4]
+        unchosen_heroes = [1, 2, 3, 4, 5, 6]
+        unchosen_missions = [1, 2, 3, 4]
         chosen = []
 
         # Iterates while missions are still available
@@ -36,11 +36,8 @@ class PathGenerator:
                 miss_index = random.randint(0, len(unchosen_missions) - 1)
                 miss_id = unchosen_missions.pop(miss_index)
                 allele.append(Missions(miss_id))
-            
+
             chosen.append(allele)
-
-
-            
 
 
 class PathIndividual:
@@ -74,4 +71,9 @@ def genetic_search(costs, starts, portal, gen_amount, pop_size):
     gen_amount: Total amount of iterations (generations) that the genetic search will 
                 be doing.
     """
+    pass
+
+
+# Test
+if __name__ == '__main__':
     pass
