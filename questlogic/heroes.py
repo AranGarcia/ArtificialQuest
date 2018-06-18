@@ -1,6 +1,6 @@
 import math
 
-from ai import search, genetics
+from ai import genetics, search
 from constants import Algorithm, MoveDir, Terrain
 
 
@@ -16,8 +16,8 @@ class Hero:
     pos  : Initial position of the hero.
     """
 
-    def __init__(self, name, gmap, pos):
-        self.name = name
+    def __init__(self, species, gmap, pos):
+        self.species = species
         self.gmap = gmap
         self.pos = pos
         self.cost = {}
@@ -231,8 +231,8 @@ class Human(Hero):
             Terrain.WATER: 2,
             Terrain.SAND: 3,
             Terrain.FOREST: 4,
-            Terrain.SWAMP : 5,
-            Terrain.SNOW : 5,
+            Terrain.SWAMP: 5,
+            Terrain.SNOW: 5,
         }
 
 
@@ -308,7 +308,7 @@ class Crocodile(Hero):
 
 
 class Sasquatch(Hero):
-    
+
     def __init__(self, name, gmap, pos):
         super(Sasquatch, self).__init__(name, gmap, pos)
 
@@ -324,7 +324,7 @@ class Sasquatch(Hero):
 
 
 class Werewolf(Hero):
-    
+
     def __init__(self, name, gmap, pos):
         super(Werewolf, self).__init__(name, gmap, pos)
 
@@ -438,6 +438,17 @@ def assign_missions(chrs, gls):
         (results[1][assignments[1] * 2], results[1][assignments[1] * 2 + 1]),
         (results[2][assignments[2] * 2], results[2][assignments[2] * 2 + 1]),
     )
+
+
+def genetic_search(chrs, gls):
+    """
+    Docstring for genetic_search
+    """
+    
+    # Dictionary of costs for every character
+    costs = {}
+    for k,v in chrs.items:
+        pass
 
 
 def __build_paths(*missions):

@@ -252,10 +252,10 @@ class GameMap(ScreenSection):
         self.monkeyImg = pygame.image.load('src/img/monkey.png')
         self.octopusImg = pygame.image.load('src/img/octopus.png')
         self.starImg = pygame.image.load("src/img/star.png")
-        self.pImg = pygame.image.load("src/img/letterP.png")
+        self.pImg = pygame.image.load("src/img/portal.png")
         self.kImg = pygame.image.load("src/img/key.png")
-        self.sImg = pygame.image.load("src/img/letterS.png")
-        self.tImg = pygame.image.load("src/img/letterT.png")
+        self.sImg = pygame.image.load("src/img/stones.png")
+        self.tImg = pygame.image.load("src/img/temple.png")
 
         # Block for don't print images
         self.blockImg = True
@@ -449,10 +449,10 @@ class ButtonSection(ScreenSection):
         self.buttonHuman = pygame.image.load("src/img/human.png")
         self.buttonMonkey = pygame.image.load("src/img/monkey.png")
         self.buttonOctopus = pygame.image.load("src/img/octopus.png")
-        self.buttonP = pygame.image.load("src/img/letterP.png")
+        self.buttonP = pygame.image.load("src/img/portal.png")
         self.buttonK = pygame.image.load("src/img/key.png")
-        self.buttonS = pygame.image.load("src/img/letterS.png")
-        self.buttonT = pygame.image.load("src/img/letterT.png")
+        self.buttonS = pygame.image.load("src/img/stones.png")
+        self.buttonT = pygame.image.load("src/img/temple.png")
         self.buttonStar = pygame.image.load("src/img/star.png")
         self.buttonRestart = pygame.image.load("src/img/restart.png")
 
