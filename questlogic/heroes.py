@@ -444,7 +444,7 @@ def genetic_search(chrs, gls):
     """
     Docstring for genetic_search
     """
-    
+
     # Dictionary of costs for every character
     costs = {}
     for k,v in chrs.items:
