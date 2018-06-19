@@ -8,36 +8,37 @@ from constants import Heroes, Missions
 
 class PathGenerator:
     def __init__(self, costs, starts):
-        self.costs = costs
-        self.starts = starts
+        # Set costs a class variable so that PathIndividual may have acces
+        # without an instance
+        PathGenerator.set_costs(costs)
+        # self.starts = starts
+        # self.hero_ids = dict(
+        #     (index, Heroes[name].value) for index, name in enumerate(costs.keys()))
+        self.hero_ids = [Heroes[name].value for name in costs.keys()]
 
     def generate_individual(self):
-        """
-        """
+        unchosen_missions = ["KEY", "STONES", "TEMPLE", "FRIEND"]
 
-        # Helps keep track of which elements have already been used
-        unchosen_heroes = [1, 2, 3, 4, 5, 6]
-        unchosen_missions = [1, 2, 3, 4]
-        chosen = []
+        config = [
+            [self.hero_ids[i], random.randint(1, 3) ] for i in range(3)
+        ]
 
-        # Iterates while missions are still available
-        # (A single hero may be assigned to all missions)
-        while unchosen_missions:
-            allele = []
+        for um in unchosen_missions:
+            index = random.randint(0, 2)
+            config[index].append(um)
+        
+        return PathIndividual(config)
 
-            # Choosing a hero randomly
-            hero_index = random.randint(0, len(unchosen_heroes) - 1)
-            hero_id = unchosen_heroes.pop(hero_index)
-            allele.append(Heroes(hero_id))
+    def populate(self, pop_size):
+        return [self.generate_individual() for i in range(pop_size)]
 
-            # Choosing missions randomly
-            amount = random.randint(0, len(unchosen_missions))
-            for i in range(amount):
-                miss_index = random.randint(0, len(unchosen_missions) - 1)
-                miss_id = unchosen_missions.pop(miss_index)
-                allele.append(Missions(miss_id))
+    @classmethod
+    def set_costs(cls, costs):
+        cls.costs = costs
 
-            chosen.append(allele)
+    @classmethod
+    def get_cost(cls, hero_id, start, goal):
+        return cls.costs[Heroes(hero_id).name][start][goal].acc_cost
 
 
 class PathIndividual:
@@ -54,14 +55,48 @@ class PathIndividual:
     """
 
     def __init__(self, assignments):
+        if len(assignments) != 3:
+            raise ValueError('invalid format of assignments', assignments)
+
         self.chromosome = []
         for allele in assignments:
             # Index 0 is for the hero
-            h = allele[0]
-            self.chromosome.append(h.value)
+            allele.extend([None for i in range(6 - len(allele))])
+            self.chromosome.extend(allele)
+        
+        self.cost = self.__calculate_cost(self.chromosome)
+
+    def __calculate_cost(self, chrom):
+        cost = 0
+
+        # Hero 1 costs
+        for i in range(2, 6):
+            if chrom[i] is None:
+                if i > 2:
+                    cost += PathGenerator.get_cost(chrom[0], chrom[i - 1], "PORTAL")
+                break
+            cost += PathGenerator.get_cost(chrom[0], chrom[i - 1], chrom[i])
+
+        # Hero 2 costs
+        for i in range(8, 12):
+            if chrom[i] is None:
+                if i > 8:
+                    cost += PathGenerator.get_cost(chrom[6], chrom[i - 1], "PORTAL")
+                break
+            cost += PathGenerator.get_cost(chrom[6], chrom[i - 1], chrom[i])
+
+        # Hero 3 costs
+        for i in range(14, 18):
+            if chrom[i] is None:
+                if i > 14:
+                    cost += PathGenerator.get_cost(chrom[12], chrom[i - 1], "PORTAL")
+                break
+            cost += PathGenerator.get_cost(chrom[12], chrom[i - 1], chrom[i])
+        
+        return cost
 
 
-def genetic_search(costs, starts, portal, gen_amount, pop_size):
+def genetic_search(costs, starts, gen_amount=30, pop_size=10):
     """
     Starts the search of possible solutions of the assignment of missions to heroes.
 
@@ -71,9 +106,17 @@ def genetic_search(costs, starts, portal, gen_amount, pop_size):
     gen_amount: Total amount of iterations (generations) that the genetic search will 
                 be doing.
     """
-    pass
 
+    pg = PathGenerator(costs, starts)
 
-# Test
-if __name__ == '__main__':
-    pass
+    pop = pg.populate(pop_size)
+
+    for p in pop:
+        print(p.chromosome, p.cost)
+
+    for i in range(gen_amount):
+        # Populate
+        # Remove unfit
+        # Reproduce
+        # Mutate
+        pass
