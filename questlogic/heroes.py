@@ -1,7 +1,7 @@
 import math
 
 from ai import genetics, search
-from constants import Algorithm, MoveDir, Terrain
+from constants import Algorithm, MoveDir, Terrain, Heroes
 
 
 class Hero:
@@ -440,15 +440,72 @@ def assign_missions(chrs, gls):
     )
 
 
-def genetic_search(chrs, gls):
+def use_genetic_search(heroes, starts, goals):
     """
-    Docstring for genetic_search
+    Returns an estimated but quite good solution of assigning the 4 missions to
+    the 3 selected heroes using genetic algorithms.
     """
-    
+    print("Search for optimal assignments of missions...")
+    print('The portal will open at', goals['PORTAL'])
+    print('The temple is at', goals['TEMPLE'])
+    print('The stones are at', goals['STONES'])
+    print('The key is at', str(goals['KEY']))
+    print('Your friend is at' + str(goals['FRIEND']) + '\n')
+
+    print("Party selected:\t", end='')
+    for h in heroes:
+        print(h.species.name, end='\t')
+    print('\n')
+
     # Dictionary of costs for every character
     costs = {}
-    for k,v in chrs.items:
-        pass
+
+    # First get all possible costs for every hero
+    # (X should not be calculated)
+    # _|1|2|3|k|t|s|f|p
+    # 1|X|X|X| | | | |
+    # 2|X|X|X| | | | |
+    # 3|X|X|X| | | | |
+    # k| | | |X| | | |
+    # t| | | | |X| | |
+    # s| | | | | |X| |
+    # p| | | | | | |X|
+
+    print('Calculating costs (this may take a while)...')
+    for h in heroes:
+        hero_costs = {}
+
+        for index, st in enumerate(starts):
+            # Each starting point will map to destination.
+            # (The value will be a search node with the path cost)
+            start_dict = {}
+
+            # Iterate to all possible goals
+            for k, v in goals.items():
+                h.set_start(st)
+                h.set_goal(v)
+                solution = h.start_heuristic_search()
+                start_dict[k] = solution.node
+
+            hero_costs[index + 1] = start_dict
+
+        # Also calculate paths between objectives, except to itself
+        for k, v in goals.items():
+            goal_dict = {}
+            for j, w in goals.items():
+                if k != j:
+                    h.set_start(v)
+                    h.set_goal(w)
+                    solution = h.start_heuristic_search()
+                    goal_dict[j] = solution.node
+            hero_costs[k] = goal_dict
+
+        costs[h.species.name] = hero_costs
+    print("DONE. Now using genetic algorithm...")
+
+    # The result is an individual that represents
+    # [h1, s1, m1_1, m1_2, m1_3,..., h3, s3, m3_1, m3_2, m3_3]
+    result = genetics.genetic_search(costs, starts)
 
 
 def __build_paths(*missions):
