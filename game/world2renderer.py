@@ -32,7 +32,7 @@ class World2Renderer:
 
         # Attributes for blocking clicks and keyboard events
         self.keyboard_block = False
-        self.block_start = None
+        self.block_start = 0
         self.input_actions = []
         self.flagStone = 0
 
@@ -215,31 +215,35 @@ class World2Renderer:
 
             # Start algorithm
             if self.block_start == 12:
-                print("Genetic algorithm")
-                """ goals = {
-                    'key': self.gameobjects[0].key_pos,
-                    'stones': self.gameobjects[0].stone_pos,
-                    'temple': self.gameobjects[0].temple_pos,
-                    'portal': self.gameobjects[0].portal_pos
-                }
-                fellowship = [
-                    self.gameobjects[0].human,
-                    self.gameobjects[0].octopus,
-                    self.gameobjects[0].monkey
-                ]
-                if not goals['key'] or not goals['temple'] or \
-                        not goals['stones'] or not goals['portal']:
-                    self.gameobjects[1].insert_log('>ITEMS missing on map.')
+                if len(self.gameobjects[0].entrances) < 3:
+                    self.gameobjects[1].insert_log('>STARTS missing on map.')
+                    self.gameobjects[1].insert_log(
+                        ' Only ' + str(len(self.gameobjects[0].entrances)) + ' set.')
 
-                elif not all(fellowship):
-                    self.gameobjects[1].insert_log('>HEROES missing on map.')
+                goals = {
+                    'KEY': self.gameobjects[0].key_pos,
+                    'STONES': self.gameobjects[0].stone_pos,
+                    'TEMPLE': self.gameobjects[0].temple_pos,
+                    'PORTAL': self.gameobjects[0].portal_pos,
+                    'FRIEND': self.gameobjects[0].friend_pos
+                }
+
+                if not goals['KEY'] or not goals['TEMPLE'] or \
+                        not goals['STONES'] or not goals['PORTAL'] or not goals['FRIEND']:
+                    self.gameobjects[1].insert_log('>ITEMS missing on map.')
+                    self.gameobjects[1].insert_log(
+                        ' Only ' + str(len([g for g in goals.values() if g is not None])) + ' set.')
+
+                elif len(self.gameobjects[0].heroes) < 3:
+                    self.gameobjects[1].insert_log('>ITEMS missing on map.')
+                    self.gameobjects[1].insert_log(
+                        ' Only ' + str(len(self.gameobjects[0].heroes)) + ' are set.')
+
+                # Everything should be set to start the genetic algorithm
                 else:
-                    missions = heroes.assign_missions(fellowship, goals)
-                    self.gameobjects[0].moveHuman = missions[0]
-                    self.gameobjects[0].moveOctapus = missions[1]
-                    self.gameobjects[0].moveMonkey = missions[2]
-                
-                self.block_start = -1 """
+                    heroes.use_genetic_search(
+                        self.gameobjects[0].heroes, self.gameobjects[0].entrances, goals)
+                self.block_start = -1
 
             # Game reset
             elif self.block_start == 13:
