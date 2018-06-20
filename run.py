@@ -20,10 +20,11 @@ else:
         gtype = aqgame.GameType.WORLD1
     elif argument == "world2":
         gtype = aqgame.GameType.WORLD2
+    elif argument == "world3":
+        gtype = aqgame.GameType.WORLD3
     else:
         printUsage()
         exit(1)
 
     game = aqgame.Game(gtype)
     game.run()
-    

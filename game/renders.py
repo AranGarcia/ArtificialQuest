@@ -413,8 +413,8 @@ class ButtonSection(ScreenSection):
         # Start - Goal buttons
         self.screen.blit(self.buttonStart,
                          (self.coords[0] + 48 * 2, self.coords[1]))
-        self.screen.blit(
-            self.buttonEnd, (self.coords[0] + 48 * 3, self.coords[1]))
+        self.screen.blit(self.buttonEnd,
+                         (self.coords[0] + 48 * 3, self.coords[1]))
 
         # Algorithm buttons
         # Depth first search button

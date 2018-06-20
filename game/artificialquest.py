@@ -4,13 +4,14 @@ all the event handling and rendering of the simulation.
 '''
 import pygame
 from questlogic import maps
-from . import renders, world1renderer, world2renderer
+from . import renders, world1renderer, world2renderer, world3renderer
 from enum import Enum
 
 class GameType(Enum):
     DUNGEON = 1
     WORLD1 = 2
     WORLD2 = 3
+    WORLD3 = 4
 
 
 class Game:
@@ -52,7 +53,7 @@ class Game:
 
             self.renderer.render()
             pygame.display.update()
-    
+
     @staticmethod
     def get_renderer(gtype):
         if gtype == GameType.DUNGEON:
@@ -61,7 +62,9 @@ class Game:
             return world1renderer.World1Renderer
         elif gtype == GameType.WORLD2:
             return world2renderer.World2Renderer
-    
+        elif gtype == GameType.WORLD3:
+            return world3renderer.World3Renderer
+
     @staticmethod
     def get_map(gmap):
         if gmap == GameType.DUNGEON:
@@ -70,4 +73,5 @@ class Game:
             return maps.Map('src/maps/mission1')
         elif gmap == GameType.WORLD2:
             return maps.Map('src/maps/mission2')
-
+        elif gmap == GameType.WORLD3:
+            return maps.Map('src/maps/mission3')
