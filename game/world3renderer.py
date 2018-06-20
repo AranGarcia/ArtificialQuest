@@ -35,6 +35,8 @@ class World3Renderer:
         self.block_start = None
         self.input_actions = []
         self.flagStone = 0
+        self.finalFlag = -1
+        self.heroAux = [None,None,None,None,None,None,None,None]
 
         # Key event mapping to constants
         self.key_actions = {
@@ -62,87 +64,130 @@ class World3Renderer:
             if self.block_start >= 0:
                 # Human
                 if self.block_start == 0:
-                    human = heroes.Human(
-                        const.Heroes.HUMAN, self.gamemap, list(tilecoords))
-                    human.set_start(tilecoords)
+                    if self.finalFlag != 0:
+                        self.finalFlag = 0
+                        self.heroAux[0] = heroes.Human(
+                            const.Heroes.HUMAN, self.gamemap, list(tilecoords))
+                        self.heroAux[0].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET human start: ' + str(tilecoords))
 
-                    if not const.Heroes.HUMAN.value in self.gameobjects[0].selected_heroes:
-                        self.gameobjects[0].heroes.append(human)
-                        self.gameobjects[0].selected_heroes.add(
-                            const.Heroes.HUMAN.value)
+                    elif self.finalFlag == 0:
+                        self.finalFlag = -1
+                        self.heroAux[0].set_goal(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET human end: ' + str(tilecoords))
 
-                    self.gameobjects[1].insert_log(
-                        '>SET human: ' + str(tilecoords))
+                        if not const.Heroes.HUMAN.value in self.gameobjects[0].selected_heroes:
+                            self.gameobjects[0].heroes.append(self.heroAux[0])
+                            self.gameobjects[0].selected_heroes.add(
+                                const.Heroes.HUMAN.value)
 
                 # Monkey
                 elif self.block_start == 1:
-                    monkey = heroes.Monkey(
-                        const.Heroes.MONKEY, self.gamemap, list(tilecoords))
-                    monkey.set_start(tilecoords)
+                    if self.finalFlag != 1:
+                        self.finalFlag = 1
+                        self.heroAux[1] = heroes.Monkey(
+                            const.Heroes.MONKEY, self.gamemap, list(tilecoords))
+                        self.heroAux[1].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET monkey start: ' + str(tilecoords))
 
-                    if not const.Heroes.MONKEY.value in self.gameobjects[0].selected_heroes:
-                        self.gameobjects[0].heroes.append(monkey)
-                        self.gameobjects[0].selected_heroes.add(
-                            const.Heroes.MONKEY.value)
+                    elif self.finalFlag == 1:
+                        self.finalFlag = -1
+                        self.heroAux[1].set_goal(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET monkey end: ' + str(tilecoords))
 
-                    self.gameobjects[1].insert_log(
-                        '>SET monkey: ' + str(tilecoords))
+                        if not const.Heroes.MONKEY.value in self.gameobjects[0].selected_heroes:
+                            self.gameobjects[0].heroes.append(self.heroAux[1])
+                            self.gameobjects[0].selected_heroes.add(
+                                const.Heroes.MONKEY.value)
 
                 # Octopus
                 elif self.block_start == 2:
-                    octopus = heroes.Octopus(
-                        const.Heroes.OCTOPUS, self.gamemap, list(tilecoords))
-                    octopus.set_start(tilecoords)
+                    if self.finalFlag != 2:
+                        self.finalFlag = 2
+                        self.heroAux[2] = heroes.Octopus(
+                            const.Heroes.OCTOPUS, self.gamemap, list(tilecoords))
+                        self.heroAux[2].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET octopus start: ' + str(tilecoords))
 
-                    if not const.Heroes.OCTOPUS.value in self.gameobjects[0].selected_heroes:
-                        self.gameobjects[0].heroes.append(octopus)
-                        self.gameobjects[0].selected_heroes.add(
-                            const.Heroes.OCTOPUS.value)
+                    elif self.finalFlag ==2:
+                        self.finalFlag = -1
+                        self.heroAux[2].set_goal(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET octopus end: ' + str(tilecoords))
 
-                    self.gameobjects[1].insert_log(
-                        '>SET octopus: ' + str(tilecoords))
+                        if not const.Heroes.OCTOPUS.value in self.gameobjects[0].selected_heroes:
+                            self.gameobjects[0].heroes.append(self.heroAux[2])
+                            self.gameobjects[0].selected_heroes.add(
+                                const.Heroes.OCTOPUS.value)
 
                 # Crocodile
                 elif self.block_start == 3:
-                    crocodile = heroes.Crocodile(
-                        const.Heroes.CROCODILE, self.gamemap, list(tilecoords))
-                    crocodile.set_start(tilecoords)
+                    if self.finalFlag != 3:
+                        self.finalFlag = 3
+                        self.heroAux[3] = heroes.Crocodile(
+                            const.Heroes.CROCODILE, self.gamemap, list(tilecoords))
+                        self.heroAux[3].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET crocodile start: ' + str(tilecoords))
 
-                    if not const.Heroes.CROCODILE.value in self.gameobjects[0].selected_heroes:
-                        self.gameobjects[0].heroes.append(crocodile)
-                        self.gameobjects[0].selected_heroes.add(
-                            const.Heroes.CROCODILE.value)
+                    elif self.finalFlag ==3:
+                        self.finalFlag = -1
+                        self.heroAux[3].set_goal(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET crocodile end: ' + str(tilecoords))
 
-                    self.gameobjects[1].insert_log(
-                        '>SET crocodile: ' + str(tilecoords))
+                        if not const.Heroes.CROCODILE.value in self.gameobjects[0].selected_heroes:
+                            self.gameobjects[0].heroes.append(self.heroAux[3])
+                            self.gameobjects[0].selected_heroes.add(
+                                const.Heroes.CROCODILE.value)
 
                 # Sasquatch
                 elif self.block_start == 4:
-                    sasquatch = heroes.Sasquatch(
-                        const.Heroes.SASQUATCH, self.gamemap, list(tilecoords))
-                    sasquatch.set_start(tilecoords)
+                    if self.finalFlag != 4:
+                        self.finalFlag = 4
+                        self.heroAux[4] = heroes.Sasquatch(
+                            const.Heroes.SASQUATCH, self.gamemap, list(tilecoords))
+                        self.heroAux[4].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET sasquatch start: ' + str(tilecoords))
 
-                    if not const.Heroes.SASQUATCH.value in self.gameobjects[0].selected_heroes:
-                        self.gameobjects[0].heroes.append(sasquatch)
-                        self.gameobjects[0].selected_heroes.add(
-                            const.Heroes.SASQUATCH.value)
+                    elif self.finalFlag == 4:
+                        self.finalFlag = -1
+                        self.heroAux[4].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET sasquatch start: ' + str(tilecoords))
 
-                    self.gameobjects[1].insert_log(
-                        '>SET sasquatch: ' + str(tilecoords))
+                        if not const.Heroes.SASQUATCH.value in self.gameobjects[0].selected_heroes:
+                            self.gameobjects[0].heroes.append(self.heroAux[4])
+                            self.gameobjects[0].selected_heroes.add(
+                                const.Heroes.SASQUATCH.value)
 
                 # Werewolf
                 elif self.block_start == 5:
-                    werewolf = heroes.Werewolf(
-                        const.Heroes.WEREWOLF, self.gamemap, list(tilecoords))
-                    werewolf.set_start(tilecoords)
-
-                    if not const.Heroes.WEREWOLF.value in self.gameobjects[0].selected_heroes:
-                        self.gameobjects[0].heroes.append(werewolf)
-                        self.gameobjects[0].selected_heroes.add(
-                            const.Heroes.WEREWOLF.value)
-
-                    self.gameobjects[1].insert_log(
+                    if self.finalFlag != 5:
+                        self.finalFlag = 5
+                        self.heroAux[5] = heroes.Werewolf(
+                            const.Heroes.WEREWOLF, self.gamemap, list(tilecoords))
+                        self.heroAux[5].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
                         '>SET werewolf: ' + str(tilecoords))
+
+                    elif self.finalFlag == 5:
+                        self.finalFlag = -1
+                        self.heroAux[5].set_start(tilecoords)
+                        self.gameobjects[1].insert_log(
+                        '>SET werewolf: ' + str(tilecoords))
+
+
+                        if not const.Heroes.WEREWOLF.value in self.gameobjects[0].selected_heroes:
+                            self.gameobjects[0].heroes.append(self.heroAux[5])
+                            self.gameobjects[0].selected_heroes.add(
+                                const.Heroes.WEREWOLF.value)
 
                 # Entrance
                 elif self.block_start == 6:
@@ -190,7 +235,8 @@ class World3Renderer:
                     self.gameobjects[0].selected_heroes.remove(
                         ht.species.value)
 
-                self.block_start = -1
+                if self.finalFlag == -1:
+                    self.block_start = -1
             else:
                 if tilecoords != self.gameobjects[0].selectedtile:
                     # Selection cursor on map
