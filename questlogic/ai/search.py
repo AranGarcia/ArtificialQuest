@@ -104,6 +104,16 @@ class Node:
     state itself.
     """
 
+    def get_path(self):
+        path = [self.coord]
+
+        aux = self.parent
+        while aux:
+            path.insert(0, aux.coord)
+            aux = aux.parent
+        
+        return path
+
     def __init__(self, coord, cost, parent=None, action=None):
         self.coord = coord
         self.parent = parent

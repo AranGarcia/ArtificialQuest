@@ -20,7 +20,7 @@ class PathGenerator:
         unchosen_missions = ["KEY", "STONES", "TEMPLE", "FRIEND"]
 
         config = [
-            [self.hero_ids[i], random.randint(1, 3)] for i in range(3)
+            [self.hero_ids[i], random.randint(0, 2)] for i in range(3)
         ]
 
         for um in unchosen_missions:
@@ -35,7 +35,7 @@ class PathGenerator:
     @staticmethod
     def crossover(inda, indb):
         """
-        Make individual A reproduce with individual B and form a new individual using the 
+        Make individual A reproduce with individual B and form a new individual using the
         crossover method of their chromosomes.
         """
         # It might be possible that the left subportion of the chromosome might
@@ -54,7 +54,24 @@ class PathGenerator:
 
     @classmethod
     def get_cost(cls, hero_id, start, goal):
+
         return cls.costs[Heroes(hero_id).name][start][goal].acc_cost
+
+    @staticmethod
+    def make_path_dict(ind):
+        print(ind)
+        paths = {}
+
+        for i in range(0, 3):
+            hero = Heroes(ind[0 + 6 * i]).name
+            path = [m for m in ind[2 + 6 * i: 6 + 6 * i] if m is not None]
+
+            if path:
+                path.insert(0, ind[1 + 6 * i])
+
+            paths[hero] = path
+
+        return paths
 
 
 def key_sort(i): return i.cost
@@ -63,13 +80,12 @@ def key_sort(i): return i.cost
 class PathIndividual:
     """
     The individual that represents a possible solution to the assignment of
-    paths to an objective in the genetic search. 
+    paths to an objective in the genetic search.
 
     The chromosome representation for the individual is
     [I_1, S, M_1_1, M_1_2, M_1_3, M_1_4,..., I_3, S, M_3_1, M_3_2, M_3_3, M_3_4]
-     0    1  2      3      4      5
 
-    where I_i is the individual i, M_i_j is the j-th mission assigned to indvidual i where 
+    where I_i is the individual i, M_i_j is the j-th mission assigned to indvidual i where
     i is a value from 1 to 3 and j is a value from 1 to 5 as represented in the enumerations
     defined in constants.py.
     """
@@ -89,60 +105,61 @@ class PathIndividual:
     def __calculate_cost(self, chrom):
         """
         Calculates the cost of the paths using the costs stored in the PathGenerator
-        class. 
+        class.
         """
         cost = 0
+        count = 0
 
         # Hero 1 costs
         for i in range(2, 6):
             if chrom[i] is None:
-                if i > 2:
-                    cost += PathGenerator.get_cost(
-                        chrom[0], chrom[i - 1], "PORTAL")
                 break
+            count += 1
             cost += PathGenerator.get_cost(chrom[0], chrom[i - 1], chrom[i])
+        if count > 0:
+            cost += PathGenerator.get_cost(
+                chrom[0], chrom[1 + count], "PORTAL")
 
+        count = 0
         # Hero 2 costs
         for i in range(8, 12):
             if chrom[i] is None:
-                if i > 8:
-                    cost += PathGenerator.get_cost(
-                        chrom[6], chrom[i - 1], "PORTAL")
                 break
+            count += 1
             cost += PathGenerator.get_cost(chrom[6], chrom[i - 1], chrom[i])
+        if count > 0:
+            cost += PathGenerator.get_cost(
+                chrom[6], chrom[7 + count], "PORTAL")
 
+        count = 0
         # Hero 3 costs
         for i in range(14, 18):
             if chrom[i] is None:
-                if i > 14:
-                    cost += PathGenerator.get_cost(
-                        chrom[12], chrom[i - 1], "PORTAL")
                 break
+            count += 1
             cost += PathGenerator.get_cost(chrom[12], chrom[i - 1], chrom[i])
+        if count > 0:
+            cost += PathGenerator.get_cost(
+                chrom[12], chrom[13 + count], "PORTAL")
 
         return cost
 
     def mutate(self):
         found = False
-        selectable = [2, 3, 4, 5, 8, 9, 10, 11, 14, 15, 16, 17]
+        selectable = [2, 8, 14]
 
         # Find an empty space
         while not found:
             index = random.choice(selectable)
 
-            if self.chromosome[index] is None:
-                index_1 = index
-                found = True
-
-                # Remove the range from which the index_1 was chosen
-                if 2 <= index_1 <= 5:
-                    remove = set([2, 3, 4, 5])
-                elif 8 <= index_1 <= 11:
-                    remove = set([8, 9, 10, 11])
-                else:
-                    remove = set([14, 15, 16, 17])
-
-                selectable = [s for s in selectable if s not in remove]
+            for i in range(4):
+                if self.chromosome[index + i] is None:
+                    index_1 = index + i
+                    found = True
+                    selectable = [s for s in [2, 8, 14] if s != index]
+                    break
+            else:
+                selectable.remove(index)
 
         found = False
 
@@ -150,15 +167,22 @@ class PathIndividual:
         while not found:
             index = random.choice(selectable)
 
-            if self.chromosome[index]:
-                index_2 = index
-                found = True
+            for i in range(4):
+                if self.chromosome[index + i]:
+                    index_2 = index + i
+                    found = True
+                    break
+            else:
+                selectable.remove(index)
 
-        print("Before:", self.chromosome)
         temp = self.chromosome[index_1]
         self.chromosome[index_1] = self.chromosome[index_2]
         self.chromosome[index_2] = temp
-        print("After:", self.chromosome)
+        self.redefine()
+
+    def n_mutate(self, times):
+        for i in range(times):
+            self.mutate()
 
     def clone(self):
         return PathIndividual([
@@ -184,6 +208,21 @@ class PathIndividual:
             return False
 
         return True
+
+    def redefine(self):
+        chrom = self.chromosome
+        new_chrom = []
+        for i in range(3):
+            temp = [chrom[0 + 6 * i], chrom[1 + 6 * i]]
+            temp.extend(
+                [c for c in chrom[2 + 6 * i: 6 + 6 * i] if c is not None])
+            missing = len(temp)
+            temp.extend([None for i in range(6 - missing)])
+            new_chrom.extend(temp)
+
+        self.chromosome = new_chrom
+
+        self.cost = self.__calculate_cost(self.chromosome)
 
 
 class Roulette:
@@ -211,6 +250,7 @@ def genetic_search(costs, starts, gen_amount=30, pop_size=10):
 
         # Populate
         population.extend(pg.populate(10 - len(population)))
+        # print_population(population)
 
         # Evaluate fitness and mark inconsistent individuals
         total = 0
@@ -235,9 +275,11 @@ def genetic_search(costs, starts, gen_amount=30, pop_size=10):
         new_gen = []
         for p in population:
             offspring = p.clone()
-            offspring.mutate()
+            offspring.n_mutate(random.randint(1, 3))
             new_gen.append(offspring)
-    
+
+        # print_population(new_gen)
+
         population.extend(new_gen)
 
         population.sort(key=key_sort)
@@ -245,11 +287,13 @@ def genetic_search(costs, starts, gen_amount=30, pop_size=10):
         population = population[:10]
 
         for p in population:
-            print('\tCost:', p.cost, 
-            
-            
-            p.chromosome)
+            print('\tCost:', p.cost, p.chromosome)
 
         population = population[:6]
 
-    return population[0]
+    return PathGenerator.make_path_dict(population[0].chromosome)
+
+
+def print_population(pop):
+    for p in pop:
+        print('\t\t', p.chromosome)

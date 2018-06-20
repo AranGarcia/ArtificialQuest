@@ -452,10 +452,8 @@ def use_genetic_search(heroes, starts, goals):
     print('The key is at', str(goals['KEY']))
     print('Your friend is at' + str(goals['FRIEND']) + '\n')
 
-    print("Party selected:\t", end='')
-    for h in heroes:
-        print(h.species.name, end='\t')
-    print('\n')
+    print("Party selected:",  ' '.join(
+        [h.species.name for h in heroes]), end='')
 
     # Dictionary of costs for every character
     costs = {}
@@ -487,8 +485,7 @@ def use_genetic_search(heroes, starts, goals):
                 solution = h.start_heuristic_search()
                 start_dict[k] = solution.node
 
-            hero_costs[index + 1] = start_dict
-
+            hero_costs[index] = start_dict
         # Also calculate paths between objectives, except to itself
         for k, v in goals.items():
             goal_dict = {}
@@ -500,12 +497,28 @@ def use_genetic_search(heroes, starts, goals):
                     goal_dict[j] = solution.node
             hero_costs[k] = goal_dict
 
+        print_gen_costs(hero_costs, h.species.name)
+
         costs[h.species.name] = hero_costs
     print("DONE. Now using genetic algorithm...")
 
-    # The result is an individual that represents
-    # [h1, s1, m1_1, m1_2, m1_3,..., h3, s3, m3_1, m3_2, m3_3]
+    # The result is an dictionary mapping a hero to another dictionary,
+    # which in turn maps one of the keys to another key from the goal
+    # dictionary
+
     result = genetics.genetic_search(costs, starts)
+    print("\nGenetic algorithm done. Result is")
+
+    # Print results
+    paths = {}
+    for k, v in result.items():
+        if v:
+            print(k)
+            print('\t', starts[v[0]])
+            for i in v[1:]:
+                print('\t', i)
+
+            __path_for_hero(k, v, costs)
 
 
 def __build_paths(*missions):
@@ -515,6 +528,29 @@ def __build_paths(*missions):
         paths.append(__build_path(m))
 
     return paths
+
+
+def __path_for_hero(hero, missions, costs):
+    """
+    Returns a list of tuples which are the coordinates of the path to take.
+    """
+
+    # Since search algorihtm returns a leaf node, iteration will made from the portal
+    # to last objective, to second last, etc...
+    node = costs[hero][missions[-1]]["PORTAL"]
+    total = [p for p in node.get_path()]
+
+    # Add path from last objective to portal
+    node = costs[hero]
+
+    for i in range(len(missions) - 1, 0, -1):
+        node = costs[hero][missions[i - 1]][missions[i]]
+        path = node.get_path()
+
+        for a in path[::-1]:
+            total.insert(0, a)
+
+    return total
 
 
 def __build_path(s_i_p):
@@ -537,3 +573,27 @@ def __build_path(s_i_p):
     # print('Path made:', path)
 
     return path
+
+
+def __build_genetic_path(individual):
+    pass
+
+
+def print_gen_costs(costs, name):
+    g = [0, 1, 2, "KEY", "TEMPLE", "STONES", "FRIEND", "PORTAL"]
+
+    print("Costs for", name.capitalize())
+    print("______", end='')
+    for i in g[3:]:
+        print("|%6s" % str(i), end='')
+    print()
+
+    for i in g:
+        print("%6s" % str(i), end='')
+        for j in g[3:]:
+            if not isinstance(j, int) and i != j:
+                print("|%6s" % str(costs[i][j].acc_cost), end='')
+            else:
+                print("|------", end='')
+        print()
+    print()
