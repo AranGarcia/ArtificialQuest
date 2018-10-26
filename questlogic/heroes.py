@@ -414,7 +414,7 @@ def assign_missions(chrs, gls):
     costs = []
     for i, tr in enumerate(results):
         print('%-10s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s|  %-5s' %
-              (chrs[i].name,
+              (chrs[i].species,
                tr[0].acc_cost, tr[1].acc_cost + tr[0].acc_cost,
                tr[2].acc_cost, tr[3].acc_cost + tr[2].acc_cost,
                tr[4].acc_cost, tr[5].acc_cost + tr[4].acc_cost)
@@ -431,7 +431,7 @@ def assign_missions(chrs, gls):
 
     print('\nMission assignment:')
     for i, c in enumerate(chrs):
-        print('%-10s:%s' % (c.name, assignment_names[assignments[i]]))
+        print('%-10s:%s' % (c.species, assignment_names[assignments[i]]))
 
     return __build_paths(
         (results[0][assignments[0] * 2], results[0][assignments[0] * 2 + 1]),
