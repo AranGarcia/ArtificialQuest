@@ -199,9 +199,9 @@ class World2Renderer:
                     # Info of the selected tile
                     terraintype = self.gameobjects[0].getterrain(tilecoords)
                     self.gameobjects[1].insert_log(
-                        '>INFO: ' +
-                        const.TERRAIN_NAMES[terraintype] +
-                        ' ' + str(tilecoords)
+                        '>INFO: '
+                        + const.TERRAIN_NAMES[terraintype]
+                        + ' ' + str(tilecoords)
                     )
                 else:
                     # Deactivates cursor if clicked on same selected tile
@@ -215,10 +215,15 @@ class World2Renderer:
 
             # Start algorithm
             if self.block_start == 12:
+                conditionsmet = 0
+
+                # Check if all starting points are all set
                 if len(self.gameobjects[0].entrances) < 3:
-                    self.gameobjects[1].insert_log('>STARTS missing on map.')
+                    self.gameobjects[1].insert_log('>DOORS missing on map.')
                     self.gameobjects[1].insert_log(
-                        ' Only ' + str(len(self.gameobjects[0].entrances)) + ' set.')
+                        ' ' + str(len(self.gameobjects[0].entrances)) + '/3 doors set.')
+                else:
+                    conditionsmet += 1
 
                 goals = {
                     'KEY': self.gameobjects[0].key_pos,
@@ -228,19 +233,27 @@ class World2Renderer:
                     'FRIEND': self.gameobjects[0].friend_pos
                 }
 
+                # Check if all goals are all set
                 if not goals['KEY'] or not goals['TEMPLE'] or \
                         not goals['STONES'] or not goals['PORTAL'] or not goals['FRIEND']:
                     self.gameobjects[1].insert_log('>ITEMS missing on map.')
                     self.gameobjects[1].insert_log(
-                        ' Only ' + str(len([g for g in goals.values() if g is not None])) + ' set.')
+                        ' ' + str(len([g for g in goals.values() if g is not None])) +
+                        '/5 goals set.')
+                else:
+                    conditionsmet += 1
 
-                elif len(self.gameobjects[0].heroes) < 3:
-                    self.gameobjects[1].insert_log('>ITEMS missing on map.')
+                # Check if heroes are chosen
+                if len(self.gameobjects[0].heroes) < 3:
+                    self.gameobjects[1].insert_log('>HEROES missing on map.')
                     self.gameobjects[1].insert_log(
-                        ' Only ' + str(len(self.gameobjects[0].heroes)) + ' are set.')
+                        ' ' + str(len(self.gameobjects[0].heroes)) +
+                        '/3 heroes chosen.')
+                else:
+                    conditionsmet += 1
 
                 # Everything should be set to start the genetic algorithm
-                else:
+                if conditionsmet == 3:
                     heroes.use_genetic_search(
                         self.gameobjects[0].heroes, self.gameobjects[0].entrances, goals)
                 self.block_start = -1
@@ -249,8 +262,8 @@ class World2Renderer:
             elif self.block_start == 13:
                 self.gameobjects = [
                     GameMap(self.screen, (0, 0), self.gamemap),
-                    LogSection(self.screen, self.height -
-                               48, (self.width - 300, 0)),
+                    LogSection(self.screen, self.height
+                               - 48, (self.width - 300, 0)),
                     ButtonSection(self.screen, self.width,
                                   (0, len(self.gamemap.matrix) * 48))
                 ]
@@ -263,8 +276,8 @@ class World2Renderer:
             self.gameobjects[0].changeterrain(int(event.unicode))
             terraintype = self.gameobjects[0].getselected()
             self.gameobjects[1].insert_log(
-                '>' + const.TERRAIN_NAMES[terraintype] +
-                ' ' + str(self.gameobjects[0].selectedtile) + ' CHANGED'
+                '>' + const.TERRAIN_NAMES[terraintype]
+                + ' ' + str(self.gameobjects[0].selectedtile) + ' CHANGED'
             )
 
 
@@ -326,7 +339,8 @@ class GameMap(ScreenSection):
             const.Heroes.OCTOPUS.value: pygame.image.load('src/img/octopus.png'),
             const.Heroes.CROCODILE.value: pygame.image.load('src/img/crocodile.png'),
             const.Heroes.SASQUATCH.value: pygame.image.load("src/img/sasquatch.png"),
-            const.Heroes.WEREWOLF.value: pygame.image.load("src/img/werewolf.png")
+            const.Heroes.WEREWOLF.value: pygame.image.load(
+                "src/img/werewolf.png")
         }
         # Other buttons
         self.starImg = pygame.image.load("src/img/star.png")

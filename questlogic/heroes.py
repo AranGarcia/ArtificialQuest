@@ -453,7 +453,7 @@ def use_genetic_search(heroes, starts, goals):
     print('Your friend is at' + str(goals['FRIEND']) + '\n')
 
     print("Party selected:",  ' '.join(
-        [h.species.name for h in heroes]), end='')
+        [h.species.name for h in heroes]))
 
     # Dictionary of costs for every character
     costs = {}
@@ -473,12 +473,12 @@ def use_genetic_search(heroes, starts, goals):
     for h in heroes:
         hero_costs = {}
 
+        # Iterate through all starting points:
         for index, st in enumerate(starts):
-            # Each starting point will map to destination.
-            # (The value will be a search node with the path cost)
+
             start_dict = {}
 
-            # Iterate to all possible goals
+            # Iterate through all goals
             for k, v in goals.items():
                 h.set_start(st)
                 h.set_goal(v)
