@@ -1,0 +1,10 @@
+apiVersion: backstage.io/v1alpha1
+kind: Component
+metadata:
+  name: ArtificialQuest
+  annotations:
+    github.com/project-slug: AranGarcia/ArtificialQuest
+spec:
+  type: other
+  lifecycle: unknown
+  owner: guests
